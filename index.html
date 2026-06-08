@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>StitchPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+<style>
+:root{
+  --bg:#F5F7FF;
+  --bg2:#ECEFFE;
+  --white:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface2:#F0F2FC;
+  --border:#E4E8F7;
+  --border2:#D0D6F0;
+  --primary:#4B5EFF;
+  --primary-light:#EEF0FF;
+  --primary-dark:#3347E8;
+  --accent:#FF6B6B;
+  --accent-light:#FFF0F0;
+  --green:#16A34A;
+  --green-light:#F0FDF4;
+  --green-border:#BBF7D0;
+  --orange:#EA6C0A;
+  --orange-light:#FFF7ED;
+  --orange-border:#FED7AA;
+  --blue:#0284C7;
+  --blue-light:#F0F9FF;
+  --blue-border:#BAE6FD;
+  --red:#DC2626;
+  --red-light:#FEF2F2;
+  --purple:#7C3AED;
+  --purple-light:#F5F3FF;
+  --text:#1A1F3A;
+  --text2:#4A5270;
+  --text3:#8890B0;
+  --text4:#B8BDD4;
+  --shadow-sm:0 1px 3px rgba(74,94,170,0.08),0 1px 2px rgba(74,94,170,0.04);
+  --shadow:0 4px 16px rgba(74,94,170,0.10),0 1px 4px rgba(74,94,170,0.06);
+  --shadow-lg:0 12px 40px rgba(74,94,170,0.14),0 4px 12px rgba(74,94,170,0.08);
+  --r-sm:10px;--r:16px;--r-lg:22px;--r-xl:28px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;padding-bottom:76px;font-size:15px;}
+
+/* ── HEADER ── */
+.app-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow-sm);}
+.app-header-inner{display:flex;align-items:center;gap:10px;height:58px;}
+.hdr-logo{width:34px;height:34px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hdr-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:var(--text);flex:1;}
+.hdr-subtitle{font-size:11px;color:var(--text3);font-weight:500;}
+.back-btn{display:none;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:6px 14px 6px 10px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Nunito',sans-serif;margin-left:auto;}
+.back-btn svg{flex-shrink:0;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;z-index:200;box-shadow:0 -4px 20px rgba(74,94,170,0.08);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;position:relative;}
+.nav-icon-wrap{width:40px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:14px;transition:background 0.2s;}
+.nav-item.active .nav-icon-wrap{background:var(--primary-light);}
+.nav-item.active svg{color:var(--primary);}
+.nav-item svg{color:var(--text4);transition:color 0.2s;}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--text3);transition:color 0.2s;}
+.nav-item.active .nav-lbl{color:var(--primary);}
+.nav-dot{position:absolute;top:2px;right:calc(50% - 14px);background:var(--accent);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;border:2px solid var(--white);}
+.nav-dot.show{display:flex;}
+
+/* ── PAGES ── */
+.page{display:none;padding:16px 14px;animation:pIn 0.22s ease;}
+.page.active{display:block;}
+@keyframes pIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+.card-hdr{display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+.card-hdr-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-hdr-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.card-hdr-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* ── KPI GRID ── */
+.kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.kpi-num{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:var(--text);line-height:1;}
+.kpi-lbl{font-size:11px;color:var(--text3);font-weight:600;margin-top:5px;}
+.kpi-icon{position:absolute;right:12px;top:14px;opacity:0.12;}
+
+/* ── ACTION CARDS ── */
+.action-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:all 0.15s;box-shadow:var(--shadow-sm);margin-bottom:10px;}
+.action-card:active{transform:scale(0.98);background:var(--surface2);}
+.action-card.highlight{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);border:none;box-shadow:0 6px 20px rgba(75,94,255,0.30);}
+.action-card.highlight .ac-title{color:#fff;}
+.action-card.highlight .ac-sub{color:rgba(255,255,255,0.75);}
+.action-card.highlight .ac-arrow{color:rgba(255,255,255,0.6);}
+.ac-icon-box{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-card.highlight .ac-icon-box{background:rgba(255,255,255,0.18);}
+.ac-text{flex:1;}
+.ac-title{font-size:14px;font-weight:700;color:var(--text);}
+.ac-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.ac-arrow{color:var(--text4);margin-left:auto;}
+
+/* ── FORMS ── */
+.form-row{margin-bottom:13px;}
+.field-label{display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.input-wrap{position:relative;}
+.input-wrap svg.field-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none;}
+.input-wrap input,.input-wrap select,.input-wrap textarea{padding-left:38px;}
+input,select,textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);border-radius:var(--r);padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;outline:none;transition:border-color 0.18s,box-shadow 0.18s;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(75,94,255,0.10);background:var(--white);}
+input[readonly]{background:var(--bg);color:var(--text2);border-color:var(--border);}
+textarea{resize:none;height:68px;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238890B0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.phone-wrap{display:flex;align-items:stretch;gap:0;}
+.cc-prefix{background:var(--primary-light);border:1.5px solid var(--primary);border-right:none;border-radius:var(--r) 0 0 var(--r);padding:11px 12px;font-size:14px;font-weight:700;color:var(--primary);white-space:nowrap;display:flex;align-items:center;}
+.phone-wrap input{border-radius:0 var(--r) var(--r) 0;border-left:none;}
+.phone-wrap input:focus{border-color:var(--primary);}
+
+/* ── PILLS ── */
+.pill-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.pill{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.pill.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
+.pill svg{flex-shrink:0;}
+
+/* ── CHECKBOX ── */
+.check-row{display:flex;align-items:center;gap:9px;padding:10px 0;}
+.check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;}
+.check-row label{font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;}
+
+/* ── MEASUREMENT SECTION ── */
+.meas-section{display:none;} .meas-section.active{display:block;}
+.meas-layout{display:flex;gap:14px;align-items:flex-start;}
+.meas-diagram{flex-shrink:0;width:90px;}
+.meas-diagram svg{width:100%;height:auto;}
+.meas-fields{flex:1;}
+.meas-field-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;position:relative;}
+.meas-field-row:last-child{margin-bottom:0;}
+.mf-label{width:70px;flex-shrink:0;}
+.mf-label-text{font-size:11px;font-weight:700;color:var(--text2);line-height:1.2;}
+.mf-label-hint{font-size:10px;color:var(--text4);}
+.mf-input{flex:1;}
+.mf-input input{padding:9px 11px;font-size:13px;border-radius:var(--r-sm);}
+.mf-unit{font-size:11px;color:var(--text3);font-weight:600;width:20px;text-align:right;flex-shrink:0;}
+.meas-highlight-line{position:absolute;left:-4px;top:50%;transform:translateY(-50%);width:3px;height:70%;background:var(--primary);border-radius:2px;opacity:0;transition:opacity 0.2s;}
+.mf-input input:focus~.meas-highlight-line{opacity:1;}
+
+/* ── CART ── */
+.cart-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:10px;display:flex;gap:11px;}
+.cart-item-body{flex:1;}
+.cart-item-name{font-size:14px;font-weight:700;color:var(--text);}
+.cart-meas{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.6;}
+.cart-note{font-size:11px;color:var(--orange);background:var(--orange-light);border-radius:6px;padding:3px 8px;display:inline-block;margin-top:4px;font-weight:600;}
+.cart-price{font-size:13px;font-weight:800;color:var(--primary);margin-top:5px;}
+.cart-del{background:var(--red-light);border:1.5px solid #FECACA;border-radius:var(--r-sm);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;align-self:flex-start;}
+
+/* ── PAY ROW ── */
+.pay-line{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.pay-line:last-child{border:none;}
+.pay-line.total{font-size:16px;font-weight:800;color:var(--primary);}
+.pay-line.balance{color:var(--green);font-weight:700;}
+.pay-line input{width:120px;text-align:right;padding:7px 10px;font-size:13px;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:700;cursor:pointer;transition:all 0.15s;font-size:14px;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--primary);color:#fff;padding:14px 20px;width:100%;font-size:15px;box-shadow:0 4px 16px rgba(75,94,255,0.30);}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-ghost{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:9px 16px;}
+.btn-green{background:var(--green-light);border:1.5px solid var(--green-border);color:var(--green);padding:9px 15px;}
+.btn-blue{background:var(--blue-light);border:1.5px solid var(--blue-border);color:var(--blue);padding:9px 15px;}
+.btn-red{background:var(--red-light);border:1.5px solid #FECACA;color:var(--red);padding:9px 15px;}
+.btn-orange{background:var(--orange-light);border:1.5px solid var(--orange-border);color:var(--orange);padding:9px 15px;}
+.btn-wa{background:#25D366;color:#fff;padding:9px 15px;box-shadow:0 3px 10px rgba(37,211,102,0.25);}
+.btn-sm{padding:7px 13px;font-size:12px;}
+.btn-full{width:100%;}
+.btn-add-item{background:var(--primary-light);border:1.5px dashed var(--primary);color:var(--primary);padding:13px;width:100%;margin-top:12px;font-size:14px;border-radius:var(--r);}
+
+/* ── ORDER CARDS ── */
+.order-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.order-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 3px 3px 0;}
+.order-card.pending::after{background:var(--orange);}
+.order-card.completed::after{background:var(--green);}
+.order-card.handover::after{background:var(--blue);}
+.oc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.oc-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.oc-id{font-size:10px;font-weight:800;background:var(--primary-light);color:var(--primary);padding:3px 10px;border-radius:20px;border:1px solid rgba(75,94,255,0.2);}
+.oc-meta{font-size:12px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.oc-items{background:var(--surface2);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;}
+.oc-item-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.oc-item-row:last-child{border:none;padding-bottom:0;}
+.oci-name{font-weight:700;color:var(--text);}
+.oci-meas{color:var(--text3);font-size:11px;margin-top:1px;}
+.oci-price{font-weight:800;color:var(--primary);font-size:13px;}
+.oci-note{color:var(--orange);font-size:11px;}
+.oc-fin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.fin-box{background:var(--surface2);border-radius:var(--r-sm);padding:9px;text-align:center;border:1px solid var(--border);}
+.fin-val{font-size:13px;font-weight:800;color:var(--text);}
+.fin-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+.fin-box.balance-box .fin-val{color:var(--green);}
+.oc-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── STATUS BADGE ── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.status-badge.pending{background:var(--orange-light);color:var(--orange);border:1px solid var(--orange-border);}
+.status-badge.completed{background:var(--green-light);color:var(--green);border:1px solid var(--green-border);}
+.status-badge.handover{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-border);}
+
+/* ── STAFF ── */
+.staff-row{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.staff-av{width:40px;height:40px;border-radius:50%;background:var(--primary-light);border:2px solid rgba(75,94,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.staff-info{flex:1;}
+.staff-name{font-size:14px;font-weight:700;color:var(--text);}
+.staff-phone{font-size:12px;color:var(--text3);}
+.staff-role{font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:2px 8px;border-radius:10px;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,31,58,0.45);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:all 0.25s;}
+.modal-overlay.show{opacity:1;visibility:visible;}
+.modal-sheet{background:var(--white);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:20px 16px 32px;width:100%;max-width:480px;transform:translateY(50px);transition:transform 0.3s cubic-bezier(0.34,1.4,0.64,1);box-shadow:0 -8px 40px rgba(26,31,58,0.15);}
+.modal-overlay.show .modal-sheet{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:9px;}
+
+/* ── WA CONTACT ROWS ── */
+.wa-contact{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.15s;}
+.wa-contact:active{background:var(--primary-light);border-color:var(--primary);}
+.wa-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wa-contact-info{flex:1;}
+.wa-contact-name{font-size:14px;font-weight:700;color:var(--text);}
+.wa-contact-detail{font-size:12px;color:var(--text3);}
+.wa-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin:14px 0 8px;}
+
+/* ── CONFIRM ── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(26,31,58,0.5);backdrop-filter:blur(8px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all 0.2s;}
+.confirm-overlay.show{opacity:1;visibility:visible;}
+.confirm-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 22px;width:100%;max-width:330px;text-align:center;box-shadow:var(--shadow-lg);}
+.confirm-icon{width:60px;height:60px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;}
+.confirm-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:7px;}
+.confirm-msg{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:22px;}
+.confirm-btns{display:flex;gap:10px;}
+.confirm-btns .btn{flex:1;}
+
+/* ── SEARCH ── */
+.search-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:50px;display:flex;align-items:center;gap:9px;padding:5px 16px 5px 14px;margin-bottom:16px;transition:border-color 0.2s;box-shadow:var(--shadow-sm);}
+.search-wrap:focus-within{border-color:var(--primary);}
+.search-wrap input{flex:1;background:none;border:none;color:var(--text);font-size:14px;padding:9px 0;outline:none;font-family:'Nunito',sans-serif;font-weight:600;}
+.search-wrap input::placeholder{color:var(--text4);font-weight:500;}
+
+/* ── TABS ── */
+.tab-bar{display:flex;background:var(--surface2);border-radius:50px;padding:4px;margin-bottom:16px;border:1px solid var(--border);}
+.tab{flex:1;text-align:center;padding:9px 6px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text3);transition:all 0.18s;}
+.tab.active{background:var(--white);color:var(--primary);box-shadow:var(--shadow-sm);}
+
+/* ── HISTORY FILTER ── */
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;}
+.filter-chip{background:var(--white);border:1.5px solid var(--border);color:var(--text2);padding:7px 14px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.filter-chip.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:48px 20px;}
+.empty-icon{margin-bottom:14px;}
+.empty-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:5px;}
+.empty-sub{font-size:13px;color:var(--text3);}
+
+/* ── DIVIDER ── */
+hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+
+/* ── CONTACT LOG BADGES ── */
+.contact-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:800;margin-left:5px;vertical-align:middle;}
+.msg-badge{background:#E7FFF0;color:#16A34A;border:1px solid #BBF7D0;}
+.sms-badge{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
+.call-badge{background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;}
+.contact-action-row{display:flex;gap:8px;width:100%;}
+.contact-action-row .btn{flex:1;}
+.contact-action-row-3{display:flex;gap:6px;width:100%;}
+.contact-action-row-3 .btn{flex:1;padding:8px 4px;font-size:12px;justify-content:center;}
+.btn-wa-ready{background:#25D366;color:#fff;border:none;box-shadow:0 3px 10px rgba(37,211,102,0.22);}
+.btn-wa-ready:hover{background:#22BF5B;}
+.btn-sms{background:#EFF6FF;border:1.5px solid #BFDBFE;color:#1D4ED8;}
+.btn-call{background:#F5F3FF;border:1.5px solid #DDD6FE;color:#7C3AED;}
+.last-contact-row{font-size:11px;color:var(--text3);margin-top:6px;padding:5px 8px;background:var(--surface2);border-radius:8px;}
+
+/* ── UNREACHED BANNER ── */
+.unreached-banner{background:linear-gradient(90deg,#FFF7ED,#FFFBEB);border:1.5px solid #FED7AA;border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.unreached-banner svg{flex-shrink:0;}
+.unreached-banner-text{font-size:12px;font-weight:700;color:var(--orange);}
+.unreached-banner-sub{font-size:11px;color:var(--text3);}
+
+/* ── NOTIFY BANNER (top of completed page) ── */
+.notify-summary{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.notify-summary-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.notify-stats{display:flex;gap:10px;}
+.notify-stat{flex:1;text-align:center;background:var(--surface2);border-radius:var(--r-sm);padding:9px 6px;}
+.notify-stat-val{font-size:18px;font-weight:800;}
+.notify-stat-lbl{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:#fff;padding:11px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all 0.28s;white-space:nowrap;max-width:86vw;text-align:center;box-shadow:var(--shadow-lg);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.success{background:var(--green);}
+#toast.error{background:var(--red);}
+
+/* ── SUBSCRIPTION LOCK ── */
+#subLock{position:fixed;inset:0;z-index:9000;background:linear-gradient(145deg,#0F1535 0%,#1A1F3A 60%,#0D1128 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;overflow-y:auto;}
+#subLock.hidden{display:none;}
+.sub-logo{width:72px;height:72px;background:linear-gradient(135deg,var(--primary),#7C8FFF);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;box-shadow:0 8px 30px rgba(75,94,255,0.45);}
+.sub-expired-badge{background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.35);color:#FCA5A5;padding:5px 16px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+.sub-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:8px;}
+.sub-sub{font-size:13px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.6;margin-bottom:24px;}
+.sub-shop-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r);padding:14px 18px;width:100%;max-width:340px;margin-bottom:20px;}
+.sub-shop-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;}
+.sub-shop-row:last-child{border:none;padding-bottom:0;}
+.sub-shop-lbl{color:rgba(255,255,255,0.45);font-size:12px;}
+.sub-shop-val{color:#fff;font-weight:800;font-family:'Sora',sans-serif;font-size:13px;}
+.sub-shop-id{color:#93C5FD;font-weight:800;font-size:14px;letter-spacing:1px;}
+.sub-pay-box{background:rgba(37,211,102,0.08);border:1.5px solid rgba(37,211,102,0.25);border-radius:var(--r);padding:14px 18px;width:100%;max-width:340px;margin-bottom:24px;text-align:center;}
+.sub-pay-title{color:#4ADE80;font-size:13px;font-weight:800;margin-bottom:4px;}
+.sub-pay-num{color:#fff;font-size:15px;font-weight:800;letter-spacing:0.5px;}
+.sub-pin-area{width:100%;max-width:340px;}
+.sub-pin-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.sub-pin-input{width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:var(--r);padding:15px 18px;font-size:22px;font-family:'Sora',sans-serif;font-weight:700;color:#fff;text-align:center;letter-spacing:6px;outline:none;transition:border-color 0.2s;margin-bottom:12px;}
+.sub-pin-input:focus{border-color:var(--primary);background:rgba(75,94,255,0.12);}
+.sub-pin-input.error{border-color:var(--red);animation:shake 0.4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+.sub-unlock-btn{width:100%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;border-radius:50px;padding:15px;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all 0.15s;box-shadow:0 6px 20px rgba(75,94,255,0.35);display:flex;align-items:center;justify-content:center;gap:8px;}
+.sub-unlock-btn:active{transform:scale(0.97);}
+.sub-err{color:#FCA5A5;font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.sub-grace-banner{position:fixed;top:0;left:0;right:0;z-index:8000;background:linear-gradient(90deg,var(--orange),#F59E0B);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;box-shadow:0 3px 12px rgba(234,108,10,0.35);}
+.sub-grace-banner.hidden{display:none;}
+
+.section-title{font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;}
+
+/* ── SEARCH RESULT PREVIEW ── */
+.dash-result{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow-sm);}
+.dash-result-hdr{font-size:11px;font-weight:700;color:var(--text3);padding:8px 14px;background:var(--surface2);text-transform:uppercase;letter-spacing:0.6px;}
+.dash-result-item{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-top:1px solid var(--border);}
+.dri-name{font-size:14px;font-weight:700;color:var(--text);}
+.dri-info{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* ── GREETING ── */
+.greeting-card{background:linear-gradient(135deg,var(--primary) 0%,#7C8FFF 100%);border-radius:var(--r-xl);padding:20px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(75,94,255,0.28);}
+.greeting-card::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%;}
+.greeting-card::after{content:'';position:absolute;bottom:-30px;right:30px;width:140px;height:140px;background:rgba(255,255,255,0.05);border-radius:50%;}
+.greeting-day{font-size:18px;font-weight:800;margin-bottom:3px;}
+.greeting-date{font-size:12px;opacity:0.8;}
+
+/* ── ANALYTICS ── */
+.ana-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ana-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:13px;text-align:center;}
+.ana-stat-val{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.ana-stat-lbl{font-size:11px;color:var(--text3);font-weight:600;margin-top:3px;}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.chart-bar{width:100%;border-radius:6px 6px 0 0;min-height:4px;transition:height 0.4s ease;position:relative;}
+.chart-bar-val{font-size:9px;font-weight:700;color:var(--text2);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.chart-lbl{font-size:10px;font-weight:600;color:var(--text3);text-align:center;flex:1;}
+.item-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.item-bar-row:last-child{margin-bottom:0;}
+.item-bar-name{width:64px;font-size:12px;font-weight:700;color:var(--text2);flex-shrink:0;}
+.item-bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.item-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+.item-bar-count{font-size:12px;font-weight:700;color:var(--text3);width:30px;text-align:right;flex-shrink:0;}
+.top-cust-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.top-cust-row:last-child{border:none;}
+.top-cust-rank{width:24px;height:24px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.top-cust-rank.gold{background:#FEF9C3;color:#A16207;}
+.top-cust-rank.silver{background:#F1F5F9;color:#64748B;}
+.top-cust-rank.bronze{background:#FFF7ED;color:#C2410C;}
+.top-cust-info{flex:1;}
+.top-cust-name{font-size:13px;font-weight:700;color:var(--text);}
+.top-cust-sub{font-size:11px;color:var(--text3);}
+.top-cust-val{font-size:13px;font-weight:800;color:var(--primary);}
+.msg-template{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all 0.15s;}
+.msg-template:active{background:var(--primary-light);border-color:var(--primary);}
+.msg-template-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.msg-template-preview{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cleanup-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.cleanup-row:last-child{border:none;}
+
+/* ── MISC ── */
+.full-width{width:100%;}
+.badge-count{background:var(--primary-light);color:var(--primary);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700;margin-left:auto;}
+</style>
+</head>
+<body>
+
+<!-- ── SUBSCRIPTION GRACE BANNER ── -->
+<div id="subGraceBanner" class="sub-grace-banner hidden">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span id="subGraceText">Subscription expires in 3 days — please renew</span>
+</div>
+
+<!-- ── SUBSCRIPTION LOCK SCREEN ── -->
+<div id="subLock" class="hidden">
+  <div class="sub-logo">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M6 8c0-1.1.9-2 2-2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V8z" stroke="#fff" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="sub-expired-badge">Subscription Expired</div>
+  <div class="sub-title">Renewal Required</div>
+  <div class="sub-sub">Your 30-day subscription has ended.<br>Contact the developer to renew access.</div>
+
+  <div class="sub-shop-box">
+    <div class="sub-shop-row">
+      <span class="sub-shop-lbl">Shop ID</span>
+      <span class="sub-shop-id" id="subShopIdDisplay">—</span>
+    </div>
+    <div class="sub-shop-row">
+      <span class="sub-shop-lbl">Shop Name</span>
+      <span class="sub-shop-val" id="subShopNameDisplay">StitchPro</span>
+    </div>
+    <div class="sub-shop-row">
+      <span class="sub-shop-lbl">Expired On</span>
+      <span class="sub-shop-val" id="subExpiredDate">—</span>
+    </div>
+  </div>
+
+  <div class="sub-pay-box">
+    <div class="sub-pay-title">📲 Contact Developer to Renew</div>
+    <div class="sub-pay-num" id="subDevContact">Send your Shop ID via WhatsApp</div>
+  </div>
+
+  <div class="sub-pin-area">
+    <div class="sub-pin-label">Enter This Month's PIN</div>
+    <input type="number" id="subPinInput" class="sub-pin-input" placeholder="······" maxlength="6" oninput="if(this.value.length>6)this.value=this.value.slice(0,6)" onkeydown="if(event.key==='Enter')tryUnlock()">
+    <button class="sub-unlock-btn" onclick="tryUnlock()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Unlock App
+    </button>
+    <div class="sub-err" id="subPinErr"></div>
+  </div>
+</div>
+
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="hdr-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="rgba(255,255,255,0.2)"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 8c0-1.1.9-2 2-2h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V8z" stroke="#fff" stroke-width="1.5"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div class="hdr-title" id="pageTitle">StitchPro</div>
+      <div class="hdr-subtitle" id="pageSubtitle">Tailor Management</div>
+    </div>
+    <button class="back-btn" id="backBtn" onclick="navigateTo('dashboard')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="greeting-card">
+    <div class="greeting-day" id="greetMsg">Good Morning 👋</div>
+    <div class="greeting-date" id="greetDate">Loading...</div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="rgba(234,108,10,0.1)"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div class="kpi-num" id="kpiPending" style="color:var(--orange)">0</div>
+      <div class="kpi-lbl">Pending</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(22,163,74,0.1)" stroke="currentColor" stroke-width="1.5"/><polyline points="8 12 11 15 16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="kpi-num" id="kpiCompleted" style="color:var(--green)">0</div>
+      <div class="kpi-lbl">Ready</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="14" rx="3" fill="rgba(75,94,255,0.1)" stroke="currentColor" stroke-width="1.5"/><path d="M16 6V4a2 2 0 00-8 0v2" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <div class="kpi-num" id="kpiToday" style="color:var(--primary);font-size:18px;">0</div>
+      <div class="kpi-lbl">Today Revenue</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" fill="rgba(124,58,237,0.1)" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="2"/><line x1="8" y1="16" x2="12" y2="16" stroke="currentColor" stroke-width="2"/></svg></div>
+      <div class="kpi-num" id="kpiTotal" style="color:var(--purple)">0</div>
+      <div class="kpi-lbl">Total Orders</div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="dashSearch" type="text" placeholder="Search by name, phone, order ID…" oninput="dashSearch()">
+  </div>
+  <div id="dashResults"></div>
+  <div class="section-title">Quick Actions</div>
+  <div>
+    <div class="action-card highlight" onclick="navigateTo('new-order')">
+      <div class="ac-icon-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <div class="ac-text"><div class="ac-title">New Order</div><div class="ac-sub">Add customer & garments</div></div>
+      <div class="ac-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="action-card" onclick="navigateTo('orders')">
+      <div class="ac-icon-box" style="background:var(--orange-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" stroke-linecap="round"/></svg></div>
+      <div class="ac-text"><div class="ac-title">Pending Orders</div><div class="ac-sub">In-progress stitching</div></div>
+      <span class="badge-count" id="dashPendingBadge">0</span>
+      <div class="ac-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="action-card" onclick="navigateTo('completed')">
+      <div class="ac-icon-box" style="background:var(--green-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ac-text"><div class="ac-title">Ready for Delivery</div><div class="ac-sub">Completed — ready to collect</div></div>
+      <div class="ac-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="action-card" onclick="navigateTo('history')">
+      <div class="ac-icon-box" style="background:var(--blue-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></div>
+      <div class="ac-text"><div class="ac-title">Order History</div><div class="ac-sub">Handed-over records</div></div>
+      <div class="ac-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="action-card" onclick="navigateTo('staff')">
+      <div class="ac-icon-box" style="background:var(--purple-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg></div>
+      <div class="ac-text"><div class="ac-title">Staff & Tailors</div><div class="ac-sub">Manage WhatsApp contacts</div></div>
+      <div class="ac-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ NEW ORDER ═══════════════ -->
+<div id="page-new-order" class="page">
+  <!-- Customer -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--primary-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div><div class="card-hdr-title">Customer Details</div><div class="card-hdr-sub">Enter contact information</div></div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <label class="field-label">Full Name *</label>
+        <div class="input-wrap">
+          <svg class="field-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input type="text" id="custName" placeholder="Customer name">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Phone *</label>
+        <div class="phone-wrap">
+          <div class="cc-prefix">+94</div>
+          <input type="tel" id="custPhone" placeholder="77xxxxxxx" oninput="formatPhone(this)">
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="field-label">Delivery Date</label>
+      <div class="input-wrap">
+        <svg class="field-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <input type="date" id="custDelivery">
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Garment -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--orange-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg></div>
+      <div><div class="card-hdr-title">Add Garment</div><div class="card-hdr-sub">Measurements & pricing</div></div>
+      <div id="cartBadge" style="display:none;margin-left:auto;background:var(--primary-light);color:var(--primary);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">0 items</div>
+    </div>
+
+    <label class="field-label">Garment Type</label>
+    <div class="pill-group" id="typePills">
+      <div class="pill active" onclick="setType(this,'Shirt')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
+        Shirt
+      </div>
+      <div class="pill" onclick="setType(this,'Trouser')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2h18l-3 20H6L3 2z"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+        Trouser
+      </div>
+      <div class="pill" onclick="setType(this,'Suit')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46l2.38 5.54H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V9h-.01l2.39-5.54z"/><polyline points="10 9 12 12 14 9"/></svg>
+        Suit
+      </div>
+      <div class="pill" onclick="setType(this,'Blouse')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46l1.38 3.54H6v12c0 1.1.9 2 2 2h8a2 2 0 002-2V7h-.99l1.37-3.54z"/></svg>
+        Blouse
+      </div>
+      <div class="pill" onclick="setType(this,'Other')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        Other
+      </div>
+    </div>
+
+    <!-- SHIRT -->
+    <div id="meas-Shirt" class="meas-section active">
+      <label class="field-label" style="margin-bottom:10px;">Sleeve Type</label>
+      <div class="pill-group" id="sleevePills" style="margin-bottom:14px;">
+        <div class="pill active" onclick="setSleeve(this,'Half')">Half Sleeve</div>
+        <div class="pill" onclick="setSleeve(this,'Full')">Full Sleeve</div>
+      </div>
+      <div class="meas-layout">
+        <div class="meas-diagram">
+          <!-- Shirt SVG diagram -->
+          <svg viewBox="0 0 90 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="130" rx="12" fill="#F0F2FC"/>
+            <!-- Body -->
+            <path d="M22 35 L15 50 L22 52 L22 110 L68 110 L68 52 L75 50 L68 35 C65 30 60 28 55 28 L52 35 C50 40 40 40 38 35 L35 28 C30 28 25 30 22 35Z" fill="white" stroke="#4B5EFF" stroke-width="1.5"/>
+            <!-- Head -->
+            <circle cx="45" cy="20" r="8" fill="white" stroke="#D0D6F0" stroke-width="1.2"/>
+            <!-- Measurements lines -->
+            <!-- Length -->
+            <line x1="10" y1="35" x2="10" y2="110" stroke="#4B5EFF" stroke-width="1" stroke-dasharray="2,2"/>
+            <line x1="8" y1="35" x2="12" y2="35" stroke="#4B5EFF" stroke-width="1"/>
+            <line x1="8" y1="110" x2="12" y2="110" stroke="#4B5EFF" stroke-width="1"/>
+            <text x="5" y="75" font-size="5" fill="#4B5EFF" transform="rotate(-90 5 75)" font-family="Nunito">LEN</text>
+            <!-- Chest -->
+            <line x1="22" y1="60" x2="68" y2="60" stroke="#EA6C0A" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="42" y="57" font-size="5" fill="#EA6C0A" font-family="Nunito">CHEST</text>
+            <!-- Shoulder -->
+            <line x1="22" y1="40" x2="68" y2="40" stroke="#16A34A" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="40" y="38" font-size="5" fill="#16A34A" font-family="Nunito">SHOULDER</text>
+            <!-- Sleeve arrow -->
+            <line x1="68" y1="42" x2="75" y2="50" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="70" y="48" font-size="4.5" fill="#7C3AED" font-family="Nunito">SLEEVE</text>
+            <!-- Neck -->
+            <line x1="38" y1="28" x2="52" y2="28" stroke="#0284C7" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="39" y="26" font-size="4.5" fill="#0284C7" font-family="Nunito">NECK</text>
+          </svg>
+        </div>
+        <div class="meas-fields">
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text" style="color:#4B5EFF">Length</div><div class="mf-label-hint">Collar→hem</div></div>
+            <div class="mf-input"><input id="s_length" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Chest</div><div class="mf-label-hint">Full round</div></div>
+            <div class="mf-input"><input id="s_chest" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text" style="color:#16A34A">Shoulder</div><div class="mf-label-hint">S to S</div></div>
+            <div class="mf-input"><input id="s_shoulder" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text" style="color:#7C3AED">Sleeve</div><div class="mf-label-hint" id="sleeveHint">Half</div></div>
+            <div class="mf-input"><input id="s_sleeve" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text" style="color:#0284C7">Neck</div><div class="mf-label-hint">Collar</div></div>
+            <div class="mf-input"><input id="s_neck" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+          <div class="meas-field-row">
+            <div class="mf-label"><div class="mf-label-text">Belly</div><div class="mf-label-hint">Waist</div></div>
+            <div class="mf-input"><input id="s_belly" type="number" placeholder="—"></div>
+            <div class="mf-unit">in</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TROUSER -->
+    <div id="meas-Trouser" class="meas-section">
+      <div class="meas-layout">
+        <div class="meas-diagram">
+          <svg viewBox="0 0 90 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="130" rx="12" fill="#F0F2FC"/>
+            <path d="M20 20 L70 20 L72 70 L55 70 L45 125 L42 125 L32 70 L18 70 Z" fill="white" stroke="#4B5EFF" stroke-width="1.5"/>
+            <!-- Waist line -->
+            <line x1="20" y1="20" x2="70" y2="20" stroke="#EA6C0A" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="36" y="17" font-size="5" fill="#EA6C0A" font-family="Nunito">WAIST</text>
+            <!-- Hip line -->
+            <line x1="19" y1="40" x2="71" y2="40" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="38" y="38" font-size="5" fill="#7C3AED" font-family="Nunito">HIP</text>
+            <!-- Thigh line -->
+            <line x1="20" y1="58" x2="65" y2="58" stroke="#16A34A" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="36" y="56" font-size="5" fill="#16A34A" font-family="Nunito">THIGH</text>
+            <!-- Length -->
+            <line x1="8" y1="20" x2="8" y2="125" stroke="#4B5EFF" stroke-width="1" stroke-dasharray="2,2"/>
+            <line x1="6" y1="20" x2="10" y2="20" stroke="#4B5EFF" stroke-width="1"/>
+            <line x1="6" y1="125" x2="10" y2="125" stroke="#4B5EFF" stroke-width="1"/>
+            <text x="3" y="78" font-size="5" fill="#4B5EFF" font-family="Nunito" transform="rotate(-90 3 78)">LENGTH</text>
+            <!-- Bottom -->
+            <line x1="33" y1="125" x2="57" y2="125" stroke="#0284C7" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="36" y="123" font-size="4.5" fill="#0284C7" font-family="Nunito">BOTTOM</text>
+          </svg>
+        </div>
+        <div class="meas-fields">
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#4B5EFF">Length</div><div class="mf-label-hint">Full inseam</div></div><div class="mf-input"><input id="t_length" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Waist</div><div class="mf-label-hint">Top band</div></div><div class="mf-input"><input id="t_waist" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#7C3AED">Hip</div><div class="mf-label-hint">Widest</div></div><div class="mf-input"><input id="t_hip" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#16A34A">Thigh</div><div class="mf-label-hint">Upper leg</div></div><div class="mf-input"><input id="t_thigh" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#0284C7">Bottom</div><div class="mf-label-hint">Ankle width</div></div><div class="mf-input"><input id="t_bottom" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text">Crotch</div><div class="mf-label-hint">Rise</div></div><div class="mf-input"><input id="t_crotch" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUIT -->
+    <div id="meas-Suit" class="meas-section">
+      <div class="meas-layout">
+        <div class="meas-diagram">
+          <svg viewBox="0 0 90 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="130" rx="12" fill="#F0F2FC"/>
+            <path d="M22 35 L15 50 L22 52 L22 110 L68 110 L68 52 L75 50 L68 35 C65 30 60 28 55 28 L52 35 C50 40 40 40 38 35 L35 28 C30 28 25 30 22 35Z" fill="white" stroke="#4B5EFF" stroke-width="1.5"/>
+            <circle cx="45" cy="20" r="8" fill="white" stroke="#D0D6F0" stroke-width="1.2"/>
+            <!-- Lapel -->
+            <path d="M38 35 L42 50 L45 48 L48 50 L52 35" stroke="#4B5EFF" stroke-width="1" fill="none"/>
+            <!-- Buttons -->
+            <circle cx="45" cy="60" r="2" fill="#D0D6F0"/>
+            <circle cx="45" cy="70" r="2" fill="#D0D6F0"/>
+            <circle cx="45" cy="80" r="2" fill="#D0D6F0"/>
+            <line x1="10" y1="35" x2="10" y2="110" stroke="#4B5EFF" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="5" y="75" font-size="5" fill="#4B5EFF" font-family="Nunito" transform="rotate(-90 5 75)">LEN</text>
+            <line x1="22" y1="60" x2="68" y2="60" stroke="#EA6C0A" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="40" y="58" font-size="5" fill="#EA6C0A" font-family="Nunito">CHEST</text>
+          </svg>
+        </div>
+        <div class="meas-fields">
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#4B5EFF">Length</div></div><div class="mf-input"><input id="su_length" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Chest</div></div><div class="mf-input"><input id="su_chest" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#16A34A">Shoulder</div></div><div class="mf-input"><input id="su_shoulder" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#7C3AED">Sleeve</div></div><div class="mf-input"><input id="su_sleeve" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Waist</div></div><div class="mf-input"><input id="su_waist" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text">Hip</div></div><div class="mf-input"><input id="su_hip" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOUSE -->
+    <div id="meas-Blouse" class="meas-section">
+      <div class="meas-layout">
+        <div class="meas-diagram">
+          <svg viewBox="0 0 90 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="130" rx="12" fill="#F0F2FC"/>
+            <path d="M25 38 L18 52 L25 54 L25 95 L65 95 L65 54 L72 52 L65 38 C62 34 58 32 54 32 L52 36 C50 41 40 41 38 36 L36 32 C32 32 28 34 25 38Z" fill="white" stroke="#4B5EFF" stroke-width="1.5"/>
+            <circle cx="45" cy="22" r="8" fill="white" stroke="#D0D6F0" stroke-width="1.2"/>
+            <!-- Bust curve -->
+            <path d="M25 62 Q35 68 45 68 Q55 68 65 62" stroke="#EA6C0A" stroke-width="1" stroke-dasharray="2,2" fill="none"/>
+            <text x="37" y="60" font-size="5" fill="#EA6C0A" font-family="Nunito">BUST</text>
+            <line x1="10" y1="38" x2="10" y2="95" stroke="#4B5EFF" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="5" y="70" font-size="5" fill="#4B5EFF" font-family="Nunito" transform="rotate(-90 5 70)">LEN</text>
+          </svg>
+        </div>
+        <div class="meas-fields">
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#4B5EFF">Length</div></div><div class="mf-input"><input id="bl_length" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Bust</div><div class="mf-label-hint">Full round</div></div><div class="mf-input"><input id="bl_bust" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#16A34A">Shoulder</div></div><div class="mf-input"><input id="bl_shoulder" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#7C3AED">Sleeve</div></div><div class="mf-input"><input id="bl_sleeve" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#EA6C0A">Waist</div></div><div class="mf-input"><input id="bl_waist" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+          <div class="meas-field-row"><div class="mf-label"><div class="mf-label-text" style="color:#0284C7">Neck</div></div><div class="mf-input"><input id="bl_neck" type="number" placeholder="—"></div><div class="mf-unit">in</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER -->
+    <div id="meas-Other" class="meas-section">
+      <div class="form-row"><label class="field-label">Item Name</label><input id="oth_name" type="text" placeholder="Describe the garment"></div>
+      <div class="two-col">
+        <div class="form-row"><label class="field-label">Measurement 1</label><input id="oth_m1" type="number" placeholder="—"> </div>
+        <div class="form-row"><label class="field-label">Measurement 2</label><input id="oth_m2" type="number" placeholder="—"></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="two-col">
+      <div class="form-row">
+        <label class="field-label">Stitching Price *</label>
+        <div class="input-wrap">
+          <svg class="field-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          <input id="item_stitch" type="number" placeholder="LKR 0">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Quantity</label>
+        <div class="input-wrap">
+          <svg class="field-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+          <input id="item_qty" type="number" placeholder="1" value="1" min="1">
+        </div>
+      </div>
+    </div>
+    <div class="check-row"><input type="checkbox" id="hasCloth" onchange="toggleCloth()"><label for="hasCloth">Shop provides cloth material</label></div>
+    <div id="clothDiv" style="display:none" class="form-row"><label class="field-label">Cloth Cost (LKR)</label><input id="item_cloth" type="number" placeholder="0"></div>
+    <div class="form-row">
+      <label class="field-label">Special Note / Design</label>
+      <textarea id="item_note" placeholder="Urgent, colour, design details, pockets…"></textarea>
+    </div>
+    <button class="btn btn-add-item btn-full" onclick="addToCart()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add to Cart
+    </button>
+  </div>
+
+  <!-- Cart -->
+  <div class="card" id="cartCard" style="display:none">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--green-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+      <div><div class="card-hdr-title">Cart</div></div>
+    </div>
+    <div id="cartItems"></div>
+  </div>
+
+  <!-- Payment -->
+  <div class="card" id="payCard" style="display:none">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--purple-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+      <div><div class="card-hdr-title">Payment Summary</div></div>
+    </div>
+    <div class="pay-line"><span style="color:var(--text2)">Subtotal</span><span class="bold" id="paySubtotal">LKR 0</span></div>
+    <div class="pay-line" style="align-items:center;"><span style="color:var(--text2)">Discount</span><input id="payDiscount" type="number" value="0" style="width:110px;text-align:right;padding:7px 11px;font-size:13px;" oninput="calcPay()"></div>
+    <div class="pay-line total"><span>Grand Total</span><span id="payTotal">LKR 0</span></div>
+    <div class="pay-line" style="align-items:center;"><span style="color:var(--text2)">Advance Paid</span><input id="payAdvance" type="number" placeholder="0" style="width:110px;text-align:right;padding:7px 11px;font-size:13px;" oninput="calcPay()"></div>
+    <div class="pay-line balance"><span>Balance Due</span><span id="payBalance">LKR 0</span></div>
+    <div style="margin-top:18px;"><button class="btn btn-primary" onclick="submitOrder()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Complete Order
+    </button></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PENDING ═══════════════ -->
+<div id="page-orders" class="page">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="pendingSearch" type="text" placeholder="Search pending orders…" oninput="renderOrderList('Pending')">
+  </div>
+  <div id="pendingList"></div>
+</div>
+
+<!-- ═══════════════ COMPLETED ═══════════════ -->
+<div id="page-completed" class="page">
+  <!-- Notification Summary Banner -->
+  <div class="notify-summary" id="notifySummary" style="display:none;">
+    <div class="notify-summary-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      Customer Notification Status
+    </div>
+    <div class="notify-stats">
+      <div class="notify-stat"><div class="notify-stat-val" id="nsNotContacted" style="color:var(--orange)">0</div><div class="notify-stat-lbl">Not Notified</div></div>
+      <div class="notify-stat"><div class="notify-stat-val" id="nsMsgSent" style="color:var(--green)">0</div><div class="notify-stat-lbl">Msg Sent</div></div>
+      <div class="notify-stat"><div class="notify-stat-val" id="nsCallMade" style="color:var(--blue)">0</div><div class="notify-stat-lbl">Called</div></div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="completedSearch" type="text" placeholder="Search completed orders…" oninput="renderOrderList('Completed')">
+  </div>
+  <div id="completedList"></div>
+</div>
+
+<!-- ═══════════════ HISTORY ═══════════════ -->
+<div id="page-history" class="page">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="historySearch" type="text" placeholder="Search history…" oninput="renderHistory()">
+  </div>
+  <div class="filter-row">
+    <div class="filter-chip active" onclick="setHFilter(this,'all')">All Time</div>
+    <div class="filter-chip" onclick="setHFilter(this,'today')">Today</div>
+    <div class="filter-chip" onclick="setHFilter(this,'week')">This Week</div>
+    <div class="filter-chip" onclick="setHFilter(this,'month')">This Month</div>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ═══════════════ STAFF ═══════════════ -->
+<div id="page-staff" class="page">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--purple-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg></div>
+      <div><div class="card-hdr-title">Add Staff Member</div></div>
+    </div>
+    <div class="two-col">
+      <div class="form-row"><label class="field-label">Name</label><input id="newStaffName" type="text" placeholder="Full name"></div>
+      <div class="form-row">
+        <label class="field-label">WhatsApp No.</label>
+        <div class="phone-wrap">
+          <div class="cc-prefix">+94</div>
+          <input id="newStaffPhone" type="tel" placeholder="77xxxxxxx" oninput="formatPhone(this)">
+        </div>
+      </div>
+    </div>
+    <div class="form-row"><label class="field-label">Role</label>
+      <select id="newStaffRole"><option>Tailor</option><option>Senior Tailor</option><option>Manager</option><option>Helper</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="addStaff()">Add Staff</button>
+  </div>
+  <div class="section-title">Team Members</div>
+  <div id="staffList"></div>
+</div>
+
+
+<!-- ═══════════════ ANALYTICS ═══════════════ -->
+<div id="page-analytics" class="page">
+  <!-- Revenue Chart -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:#EEF0FF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div><div class="card-hdr-title">Monthly Revenue</div><div class="card-hdr-sub">Last 6 months</div></div>
+    </div>
+    <div id="revenueChart" style="height:160px;display:flex;align-items:flex-end;gap:6px;padding:0 4px;"></div>
+    <div id="revenueLabels" style="display:flex;gap:6px;padding:6px 4px 0;"></div>
+  </div>
+  <!-- Summary Stats -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--green-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      <div><div class="card-hdr-title">Revenue Summary</div></div>
+    </div>
+    <div class="ana-stat-grid" id="revSummary"></div>
+  </div>
+  <!-- Item Breakdown -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--orange-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg></div>
+      <div><div class="card-hdr-title">Garment Breakdown</div><div class="card-hdr-sub">Most stitched types</div></div>
+    </div>
+    <div id="itemBreakdown"></div>
+  </div>
+  <!-- Top Customers -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--purple-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div><div class="card-hdr-title">Top Customers</div><div class="card-hdr-sub">By total spend</div></div>
+    </div>
+    <div id="topCustomers"></div>
+  </div>
+  <!-- Auto Cleanup -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--red-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></div>
+      <div><div class="card-hdr-title">Auto Cleanup</div><div class="card-hdr-sub">Monthly storage management</div></div>
+    </div>
+    <div id="cleanupStatus" style="margin-bottom:12px;"></div>
+    <div style="background:var(--orange-light);border:1.5px solid var(--orange-border);border-radius:var(--r);padding:12px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:3px;">How it works</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">Every month, all <strong>Handed Over</strong> orders older than 30 days are automatically deleted to save storage. Order counts and revenue totals are preserved in monthly summaries.</div>
+    </div>
+    <button class="btn btn-red btn-full" onclick="runManualCleanup()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+      Run Cleanup Now
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ CUSTOM MSG ═══════════════ -->
+<div id="page-custmsg" class="page">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:#E7FFF0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+      <div><div class="card-hdr-title">Send Custom Message</div><div class="card-hdr-sub">WhatsApp to any customer</div></div>
+    </div>
+    <!-- Quick Templates -->
+    <div style="margin-bottom:14px;">
+      <label class="field-label">Quick Templates</label>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="msgTemplates"></div>
+    </div>
+    <hr class="divider">
+    <!-- Recipient -->
+    <div class="form-row">
+      <label class="field-label">Send To</label>
+      <select id="msgRecipient" onchange="onRecipientChange()">
+        <option value="">— Select customer / manual —</option>
+        <option value="manual">Enter number manually</option>
+      </select>
+    </div>
+    <div class="form-row" id="manualPhoneDiv" style="display:none;">
+      <label class="field-label">WhatsApp Number</label>
+      <div class="phone-wrap">
+        <div class="cc-prefix">+94</div>
+        <input type="tel" id="manualPhone" placeholder="77xxxxxxx" oninput="formatPhone(this)">
+      </div>
+    </div>
+    <!-- Message -->
+    <div class="form-row">
+      <label class="field-label">Message</label>
+      <textarea id="customMsgText" style="height:120px;" placeholder="Type your message…"></textarea>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;text-align:right;"><span id="msgCharCount">0</span> characters</div>
+    <button class="btn btn-wa-ready btn-full" onclick="sendCustomMsg()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Send via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ BACKUP & RESTORE ═══════════════ -->
+<div id="page-backup" class="page">
+  <!-- Backup -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--primary-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <div><div class="card-hdr-title">Backup Data</div><div class="card-hdr-sub">Export all orders & staff</div></div>
+    </div>
+    <div style="background:var(--primary-light);border:1.5px solid rgba(75,94,255,0.2);border-radius:var(--r);padding:12px;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:3px;">What's included</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;">✓ All orders (Pending, Completed, Handed Over)<br>✓ Staff & tailor list<br>✓ Monthly archive summaries<br>✓ App settings</div>
+    </div>
+    <div id="backupInfo" style="margin-bottom:14px;"></div>
+    <button class="btn btn-primary btn-full" onclick="doBackup()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Backup File
+    </button>
+  </div>
+
+  <!-- Restore -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--green-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div><div class="card-hdr-title">Restore Data</div><div class="card-hdr-sub">Import from backup file</div></div>
+    </div>
+    <div style="background:var(--orange-light);border:1.5px solid var(--orange-border);border-radius:var(--r);padding:12px;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:3px;">⚠️ Warning</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">Restoring will <strong>replace all current data</strong>. Make a fresh backup first if you have unsaved changes.</div>
+    </div>
+    <div class="form-row">
+      <label class="field-label">Select Backup File (.json)</label>
+      <input type="file" id="restoreFile" accept=".json" onchange="previewRestore(this)" style="padding:10px 14px;cursor:pointer;">
+    </div>
+    <div id="restorePreview" style="display:none;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.8;"></div>
+    <button class="btn btn-green btn-full" id="restoreBtn" style="display:none;" onclick="doRestore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Restore This Backup
+    </button>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon" style="background:var(--red-light)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div><div class="card-hdr-title">Danger Zone</div><div class="card-hdr-sub">Irreversible actions</div></div>
+    </div>
+    <button class="btn btn-red btn-full" onclick="clearAllData()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+      Clear All Data
+    </button>
+  </div>
+</div>
+
+<!-- ─── BOTTOM NAV ─── -->
+<nav class="bottom-nav">
+  <div class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+    <div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="nav-lbl">Home</div>
+  </div>
+  <div class="nav-item" data-page="new-order" onclick="navigateTo('new-order')">
+    <div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+    <div class="nav-lbl">New</div>
+  </div>
+  <div class="nav-item" data-page="orders" onclick="navigateTo('orders')">
+    <div class="nav-badge"><div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="nav-dot" id="pendingDot">0</div></div>
+    <div class="nav-lbl">Pending</div>
+  </div>
+  <div class="nav-item" data-page="completed" onclick="navigateTo('completed')">
+    <div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="nav-lbl">Ready</div>
+  </div>
+  <div class="nav-item" data-page="analytics" onclick="navigateTo('analytics')">
+    <div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+    <div class="nav-lbl">Analytics</div>
+  </div>
+  <div class="nav-item" data-page="backup" onclick="navigateTo('backup')">
+    <div class="nav-icon-wrap"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+    <div class="nav-lbl">Backup</div>
+  </div>
+</nav>
+
+<!-- ─── MARK READY NOTIFY MODAL ─── -->
+<div class="modal-overlay" id="readyNotifyModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">
+      <span id="readyNotifyIcon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span id="readyNotifyTitle">Order Ready — Notify Customer</span>
+    </div>
+    <!-- Order summary box -->
+    <div id="readyNotifyInfo" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;font-size:13px;line-height:2;"></div>
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <button class="btn btn-wa-ready" style="flex:1;padding:13px;" onclick="readyNotifySendWA()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn btn-sms" style="flex:1;padding:13px;" onclick="readyNotifySendSMS()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Send SMS
+      </button>
+      <button class="btn btn-call" id="readyNotifyCallBtn" style="flex:1;padding:13px;" onclick="readyNotifyCall()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.63a16 16 0 006.29 6.29l1.95-1.95a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Call
+      </button>
+    </div>
+    <button class="btn btn-ghost btn-full" onclick="closeReadyNotify()">Skip for Now</button>
+  </div>
+</div>
+
+<!-- ─── WA MODAL ─── -->
+<div class="modal-overlay" id="waModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="#25D366" stroke-width="2" fill="rgba(37,211,102,0.1)"/></svg>
+      Send via WhatsApp
+    </div>
+    <div id="waContent"></div>
+    <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="closeWa()">Cancel</button>
+  </div>
+</div>
+
+<!-- ─── CONFIRM DIALOG ─── -->
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="cIcon" style="background:var(--red-light)">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+    </div>
+    <div class="confirm-title" id="cTitle">Are you sure?</div>
+    <div class="confirm-msg" id="cMsg">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn" id="cYes" onclick="doConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──
+localforage.config({ name: 'StitchProV2', storeName: 'main' });
+let allOrders = [], staff = [], cart = [], curType = 'Shirt', curSleeve = 'Half', hFilter = 'all', waOrderId = null, confirmCb = null;
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', async () => {
+  initGreeting();
+  let o = await localforage.getItem('orders'); allOrders = o || [];
+  let s = await localforage.getItem('staff');
+  staff = s || [
+    {id:'s1',name:'Ramesh Kumar',phone:'+94771234567',role:'Senior Tailor'},
+    {id:'s2',name:'Suresh Babu',phone:'+94779876543',role:'Tailor'}
+  ];
+  await localforage.setItem('staff', staff);
+  updateKPIs();
+  await autoMonthlyCleanup();
+  subCheckOnLoad();
+});
+
+function initGreeting() {
+  const h = new Date().getHours();
+  document.getElementById('greetMsg').textContent = `Good ${h<12?'Morning':h<17?'Afternoon':'Evening'} 👋`;
+  document.getElementById('greetDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+function updateKPIs() {
+  const p = allOrders.filter(o=>o.status==='Pending').length;
+  const c = allOrders.filter(o=>o.status==='Completed').length;
+  const t = allOrders.filter(o=>o.status!=='Deleted').length;
+  const today = new Date().toLocaleDateString('en-GB');
+  const rev = allOrders.filter(o=>o.createdDate===today&&o.status!=='Deleted').reduce((a,o)=>a+(o.advancePaid||0),0);
+  document.getElementById('kpiPending').textContent = p;
+  document.getElementById('kpiCompleted').textContent = c;
+  document.getElementById('kpiTotal').textContent = t;
+  document.getElementById('kpiToday').textContent = rev>0?'LKR '+rev.toLocaleString():'0';
+  document.getElementById('dashPendingBadge').textContent = p + ' pending';
+  const dot = document.getElementById('pendingDot');
+  dot.textContent = p; dot.classList.toggle('show', p>0);
+}
+
+async function saveOrders() { await localforage.setItem('orders', allOrders); updateKPIs(); }
+async function saveStaff() { await localforage.setItem('staff', staff); }
+
+// ── NAVIGATE ──
+const pageMeta = {
+  'dashboard':{'title':'StitchPro','sub':'Tailor Management'},
+  'new-order':{'title':'New Order','sub':'Add customer & garments'},
+  'orders':{'title':'Pending Orders','sub':'In-progress stitching'},
+  'completed':{'title':'Ready for Delivery','sub':'Completed orders'},
+  'history':{'title':'Order History','sub':'Handed-over records'},
+  'staff':{'title':'Staff & Tailors','sub':'WhatsApp contacts'},
+  'analytics':{'title':'Business Analytics','sub':'Revenue & insights'},
+  'custmsg':{'title':'Send Message','sub':'WhatsApp customers directly'},
+  'backup':{'title':'Backup & Restore','sub':'Export or import your data'},
+  'history':{'title':'Order History','sub':'Handed-over records'},
+};
+function navigateTo(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const m = pageMeta[p]||{title:'StitchPro',sub:''};
+  document.getElementById('pageTitle').textContent = m.title;
+  document.getElementById('pageSubtitle').textContent = m.sub;
+  document.getElementById('backBtn').style.display = p==='dashboard'?'none':'flex';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+  window.scrollTo(0,0);
+  if(p==='orders') renderOrderList('Pending');
+  if(p==='completed') renderOrderList('Completed');
+  if(p==='history') renderHistory();
+  if(p==='staff') renderStaff();
+  if(p==='analytics') renderAnalytics();
+  if(p==='custmsg') initCustomMsg();
+  if(p==='backup') initBackupPage();
+}
+
+// ── DASHBOARD SEARCH ──
+function dashSearch() {
+  const q = document.getElementById('dashSearch').value.toLowerCase().trim();
+  const el = document.getElementById('dashResults');
+  if(!q){el.innerHTML='';return;}
+  const res = allOrders.filter(o=>o.status!=='Deleted'&&(o.customerName.toLowerCase().includes(q)||o.customerPhone.includes(q)||o.orderId.toLowerCase().includes(q)));
+  if(!res.length){el.innerHTML='<div class="card" style="text-align:center;color:var(--text3);padding:20px;font-size:13px;">No orders found</div>';return;}
+  let h = `<div class="dash-result"><div class="dash-result-hdr">${res.length} result${res.length>1?'s':''} found</div>`;
+  res.slice(0,5).forEach(o=>{
+    const sc={'Pending':'pending','Completed':'completed','HandedOver':'handover'}[o.status]||'pending';
+    h+=`<div class="dash-result-item"><div><div class="dri-name">${o.customerName}</div><div class="dri-info">${o.orderId} · ${o.customerPhone} · ${o.createdDate}</div></div><span class="status-badge ${sc}">${o.status==='HandedOver'?'Handed Over':o.status}</span></div>`;
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ── PHONE FORMAT ──
+function formatPhone(el) {
+  let v = el.value.replace(/[^0-9]/g,'');
+  if(v.startsWith('0')) v=v.slice(1);
+  if(v.startsWith('94')) v=v.slice(2);
+  el.value = v;
+}
+function getFullPhone(val) {
+  let v = val.replace(/[^0-9]/g,'');
+  if(v.startsWith('0')) v=v.slice(1);
+  if(v.startsWith('94')) v=v.slice(2);
+  return '+94'+v;
+}
+
+// ── ITEM TYPE ──
+function setType(el, type) {
+  curType = type;
+  document.querySelectorAll('#typePills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.meas-section').forEach(s=>s.classList.remove('active'));
+  const sec = document.getElementById('meas-'+type);
+  if(sec) sec.classList.add('active');
+}
+function setSleeve(el, s) {
+  curSleeve = s;
+  document.querySelectorAll('#sleevePills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const hint = document.getElementById('sleeveHint');
+  if(hint) hint.textContent = s;
+}
+function toggleCloth() {
+  document.getElementById('clothDiv').style.display = document.getElementById('hasCloth').checked?'block':'none';
+}
+
+// ── CART ──
+function getMeas() {
+  const v = {};
+  if(curType==='Shirt') {
+    ['length','chest','shoulder','sleeve','neck','belly'].forEach(f=>{const x=document.getElementById('s_'+f)?.value;if(x)v[f]=x;});
+    v._sleeve=curSleeve;
+  } else if(curType==='Trouser') {
+    ['length','waist','hip','thigh','bottom','crotch'].forEach(f=>{const x=document.getElementById('t_'+f)?.value;if(x)v[f]=x;});
+  } else if(curType==='Suit') {
+    ['length','chest','shoulder','sleeve','waist','hip'].forEach(f=>{const x=document.getElementById('su_'+f)?.value;if(x)v[f]=x;});
+  } else if(curType==='Blouse') {
+    ['length','bust','shoulder','sleeve','waist','neck'].forEach(f=>{const x=document.getElementById('bl_'+f)?.value;if(x)v[f]=x;});
+  } else if(curType==='Other') {
+    v.name=document.getElementById('oth_name')?.value||'Custom';
+    const m1=document.getElementById('oth_m1')?.value; if(m1)v.m1=m1;
+    const m2=document.getElementById('oth_m2')?.value; if(m2)v.m2=m2;
+  }
+  return v;
+}
+
+function addToCart() {
+  const stitch = parseFloat(document.getElementById('item_stitch').value);
+  if(!stitch||stitch<=0){toast('Enter stitching price','error');return;}
+  const qty = parseInt(document.getElementById('item_qty').value)||1;
+  const hasCloth = document.getElementById('hasCloth').checked;
+  const cloth = hasCloth?(parseFloat(document.getElementById('item_cloth').value)||0):0;
+  if(hasCloth&&cloth<=0){toast('Enter cloth cost','error');return;}
+  const note = document.getElementById('item_note').value.trim();
+  const meas = getMeas();
+  const typeLabel = curType==='Shirt'?`Shirt (${curSleeve} Sleeve)`:curType;
+  cart.push({id:Date.now(),type:typeLabel,meas,stitch,cloth,hasCloth,qty,note,total:(stitch+cloth)*qty});
+  renderCart(); clearItemForm();
+  toast('Added to cart','success');
+}
+
+function clearItemForm() {
+  ['item_stitch','item_qty','item_cloth','item_note'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value=id==='item_qty'?'1':'';}
+  });
+  document.getElementById('hasCloth').checked=false;
+  document.getElementById('clothDiv').style.display='none';
+  document.querySelectorAll('.meas-section input').forEach(i=>i.value='');
+}
+
+function renderCart() {
+  const cnt = cart.length;
+  const badge = document.getElementById('cartBadge');
+  badge.textContent = cnt+' item'+(cnt!==1?'s':'');
+  badge.style.display = cnt>0?'inline-flex':'none';
+  document.getElementById('cartCard').style.display = cnt>0?'block':'none';
+  document.getElementById('payCard').style.display = cnt>0?'block':'none';
+  if(!cnt){calcPay();return;}
+  document.getElementById('cartItems').innerHTML = cart.map((it,i)=>{
+    const measText = Object.entries(it.meas).filter(([k])=>k!=='_sleeve'&&k!=='name').map(([k,v])=>`${k.toUpperCase()}: ${v}"`).join(' · ');
+    return `<div class="cart-item">
+      <div class="cart-item-body">
+        <div class="cart-item-name">${it.qty>1?it.qty+'× ':''}${it.type}</div>
+        <div class="cart-meas">${measText||'No measurements entered'}</div>
+        ${it.note?`<div class="cart-note">📌 ${it.note}</div>`:''}
+        <div class="cart-price">LKR ${it.total.toLocaleString()} <span style="font-size:11px;font-weight:500;color:var(--text3)">(Stitch LKR${it.stitch}${it.hasCloth?` + Cloth LKR${it.cloth}`:''}${it.qty>1?' ×'+it.qty:''})</span></div>
+      </div>
+      <div class="cart-del" onclick="removeCartItem(${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+    </div>`;
+  }).join('');
+  calcPay();
+}
+
+function removeCartItem(i){cart.splice(i,1);renderCart();}
+
+function calcPay() {
+  const sub = cart.reduce((a,i)=>a+i.total,0);
+  const disc = parseFloat(document.getElementById('payDiscount').value)||0;
+  const adv = parseFloat(document.getElementById('payAdvance').value)||0;
+  const grand = Math.max(0,sub-disc);
+  document.getElementById('paySubtotal').textContent='LKR '+sub.toLocaleString();
+  document.getElementById('payTotal').textContent='LKR '+grand.toLocaleString();
+  document.getElementById('payBalance').textContent='LKR '+Math.max(0,grand-adv).toLocaleString();
+}
+
+async function submitOrder() {
+  const name=document.getElementById('custName').value.trim();
+  const phoneRaw=document.getElementById('custPhone').value.trim();
+  if(!name||!phoneRaw){toast('Name & phone required','error');return;}
+  if(!cart.length){toast('Add at least one garment','error');return;}
+  const phone = getFullPhone(phoneRaw);
+  const delivery=document.getElementById('custDelivery').value;
+  const sub=cart.reduce((a,i)=>a+i.total,0);
+  const disc=parseFloat(document.getElementById('payDiscount').value)||0;
+  const adv=parseFloat(document.getElementById('payAdvance').value)||0;
+  const grand=Math.max(0,sub-disc);
+  const order={
+    orderId:'ORD-'+Date.now().toString().slice(-6),
+    customerName:name,customerPhone:phone,deliveryDate:delivery,
+    createdDate:new Date().toLocaleDateString('en-GB'),
+    createdTs:Date.now(),status:'Pending',
+    items:JSON.parse(JSON.stringify(cart)),
+    subTotal:sub,discount:disc,grandTotal:grand,advancePaid:adv,
+    balanceAmount:Math.max(0,grand-adv)
+  };
+  allOrders.push(order);
+  await saveOrders();
+  // Auto-send receipt WA prompt
+  showReceiptWA(order);
+  resetForm();
+}
+
+function resetForm() {
+  cart=[];
+  ['custName','custPhone','custDelivery','payDiscount','payAdvance'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value=id==='payDiscount'?'0':'';
+  });
+  renderCart(); clearItemForm();
+  document.querySelectorAll('#typePills .pill').forEach((p,i)=>p.classList.toggle('active',i===0));
+  document.querySelectorAll('.meas-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('meas-Shirt').classList.add('active');
+  curType='Shirt';
+}
+
+// ── RENDER ORDER LISTS ──
+function renderOrderList(status) {
+  const sid = status==='Pending'?'pendingSearch':'completedSearch';
+  const cid = status==='Pending'?'pendingList':'completedList';
+  const q=(document.getElementById(sid)?.value||'').toLowerCase().trim();
+  let orders = allOrders.filter(o=>o.status===status);
+  if(q) orders=orders.filter(o=>o.customerName.toLowerCase().includes(q)||o.customerPhone.includes(q)||o.orderId.toLowerCase().includes(q));
+  orders=orders.sort((a,b)=>{
+    if(status==='Completed') {
+      // Sort: not contacted first, then by time
+      const aContacted = a.contactLog && (a.contactLog.msgCount>0||a.contactLog.smsCount>0||a.contactLog.callCount>0);
+      const bContacted = b.contactLog && (b.contactLog.msgCount>0||b.contactLog.smsCount>0||b.contactLog.callCount>0);
+      if(!aContacted && bContacted) return -1;
+      if(aContacted && !bContacted) return 1;
+    }
+    return b.createdTs-a.createdTs;
+  });
+  if(status==='Completed') updateNotifySummary(orders);
+  const el=document.getElementById(cid);
+  if(!orders.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div><div class="empty-title">No ${status.toLowerCase()} orders</div><div class="empty-sub">${status==='Pending'?'New orders will appear here':'Mark pending orders as ready'}</div></div>`;
+    return;
+  }
+  // Add unreached banner at top for completed
+  let topHtml = '';
+  if(status==='Completed') {
+    const unreached = orders.filter(o => !o.contactLog || (o.contactLog.msgCount===0 && o.contactLog.smsCount===0 && o.contactLog.callCount===0));
+    if(unreached.length > 0) {
+      topHtml = `<div class="unreached-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div><div class="unreached-banner-text">${unreached.length} customer${unreached.length>1?'s':''} not yet notified</div><div class="unreached-banner-sub">Send ready message or call to inform them</div></div>
+      </div>`;
+    }
+  }
+  el.innerHTML = topHtml + orders.map(o=>buildOrderCard(o,status)).join('');
+}
+
+function buildOrderCard(o, mode) {
+  const itemsHtml = o.items.map((it,i)=>{
+    const mText=Object.entries(it.meas||{}).filter(([k])=>k!=='_sleeve'&&k!=='name').map(([k,v])=>`${k.toUpperCase()}: ${v}"`).join(' · ');
+    return `<div class="oc-item-row">
+      <div><div class="oci-name">${i+1}. ${it.qty>1?it.qty+'× ':''}${it.type}</div>
+      <div class="oci-meas">${mText||'—'}</div>
+      ${it.note?`<div class="oci-note">📌 ${it.note}</div>`:''}
+      </div><div class="oci-price">LKR ${it.total.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  const del = o.deliveryDate?`<span>📅 ${o.deliveryDate}</span>`:'';
+  let actions='';
+  if(mode==='Pending'){
+    actions=`<button class="btn btn-wa btn-sm" onclick="openWA('${o.orderId}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> WhatsApp</button>
+    <button class="btn btn-green btn-sm" onclick="markReady('${o.orderId}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Mark Ready</button>`;
+  } else {
+    const contact = o.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    const msgBadge  = contact.msgCount  > 0 ? `<span class="contact-badge msg-badge">${contact.msgCount}</span>`  : '';
+    const smsBadge  = contact.smsCount  > 0 ? `<span class="contact-badge sms-badge">${contact.smsCount}</span>`  : '';
+    const callBadge = contact.callCount > 0 ? `<span class="contact-badge call-badge">${contact.callCount}</span>` : '';
+    const parts = [];
+    if(contact.lastMsg)  parts.push('WA: '+timeSince(contact.lastMsg));
+    if(contact.lastSms)  parts.push('SMS: '+timeSince(contact.lastSms));
+    if(contact.lastCall) parts.push('Call: '+timeSince(contact.lastCall));
+    const lastContact = parts.length ? `<div class="last-contact-row">${parts.join(' · ')}</div>` : '';
+    actions=`
+    <div class="contact-action-row-3">
+      <button class="btn btn-wa-ready btn-sm" onclick="sendReadyMsg('${o.orderId}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        WA ${msgBadge}
+      </button>
+      <button class="btn btn-sms btn-sm" onclick="sendSms('${o.orderId}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        SMS ${smsBadge}
+      </button>
+      <button class="btn btn-call btn-sm" onclick="callCustomer('${o.orderId}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.63a16 16 0 006.29 6.29l1.95-1.95a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Call ${callBadge}
+      </button>
+    </div>
+    ${lastContact}
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-blue btn-sm" onclick="doHandover('${o.orderId}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Handover
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="openWA('${o.orderId}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        Full Order
+      </button>
+    </div>`;
+  }
+  return `<div class="order-card ${mode.toLowerCase()}">
+    <div class="oc-top"><div class="oc-name">${o.customerName}</div><div class="oc-id">${o.orderId}</div></div>
+    <div class="oc-meta"><span>📞 ${o.customerPhone}</span><span>🗓 ${o.createdDate}</span>${del}</div>
+    <div class="oc-items">${itemsHtml}</div>
+    <div class="oc-fin">
+      <div class="fin-box"><div class="fin-val">LKR ${o.grandTotal.toLocaleString()}</div><div class="fin-lbl">Total</div></div>
+      <div class="fin-box"><div class="fin-val">LKR ${o.advancePaid.toLocaleString()}</div><div class="fin-lbl">Advance</div></div>
+      <div class="fin-box balance-box"><div class="fin-val">LKR ${o.balanceAmount.toLocaleString()}</div><div class="fin-lbl">Balance</div></div>
+    </div>
+    <div class="oc-actions">${actions}</div>
+  </div>`;
+}
+
+let readyNotifyOrderId = null;
+let readyNotifyMode = 'ready'; // 'ready' or 'new'
+
+async function markReady(id) {
+  allOrders = allOrders.map(o => o.orderId===id ? {...o, status:'Completed', completedTs:Date.now()} : o);
+  await saveOrders();
+  renderOrderList('Pending');
+  toast('Marked as Ready ✓', 'success');
+  // Show notify modal
+  const o = allOrders.find(x => x.orderId === id);
+  if(o) showReadyNotify(o);
+}
+
+function showReadyNotify(o) {
+  readyNotifyOrderId = o.orderId;
+  readyNotifyMode = 'ready';
+  const balLine = o.balanceAmount > 0
+    ? `<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Balance Due</span><strong style="color:var(--red);">LKR ${o.balanceAmount.toLocaleString()}</strong></div>`
+    : `<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Balance</span><strong style="color:var(--green);">Fully Paid ✓</strong></div>`;
+  document.getElementById('readyNotifyTitle').textContent = 'Order Ready — Notify Customer';
+  document.getElementById('readyNotifyIcon').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  document.getElementById('readyNotifyCallBtn').style.display = 'flex';
+  document.getElementById('readyNotifyInfo').innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span style="font-weight:800;color:var(--text);font-size:14px;">${o.customerName}</span>
+      <span style="background:var(--green-light);color:var(--green);border:1px solid var(--green-border);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;">Ready ✓</span>
+    </div>
+    <div style="color:var(--text3);font-size:12px;margin-bottom:10px;">📞 ${o.customerPhone}</div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Order No</span><strong style="color:var(--primary);">${o.orderId}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Total</span><strong>LKR ${o.grandTotal.toLocaleString()}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Advance Paid</span><strong style="color:var(--green);">LKR ${o.advancePaid.toLocaleString()}</strong></div>
+      ${balLine}
+    </div>`;
+  document.getElementById('readyNotifyModal').classList.add('show');
+}
+
+function closeReadyNotify() {
+  document.getElementById('readyNotifyModal').classList.remove('show');
+  readyNotifyOrderId = null;
+}
+
+async function readyNotifyCall() {
+  const o = allOrders.find(x => x.orderId === readyNotifyOrderId);
+  if(!o) return;
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== readyNotifyOrderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, callCount: log.callCount+1, lastCall: Date.now() } };
+  });
+  await saveOrders();
+  closeReadyNotify();
+  window.location.href = `tel:${o.customerPhone}`;
+}
+
+async function readyNotifySendWA() {
+  const o = allOrders.find(x => x.orderId === readyNotifyOrderId);
+  if(!o) return;
+  const msg = readyNotifyMode === 'new' ? buildWAMessage(o) : buildReadyMessage(o);
+  const phone = o.customerPhone.replace(/\+/,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== readyNotifyOrderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, msgCount: log.msgCount+1, lastMsg: Date.now() } };
+  });
+  await saveOrders();
+  closeReadyNotify();
+  toast('WhatsApp opened!', 'success');
+}
+
+async function readyNotifySendSMS() {
+  const o = allOrders.find(x => x.orderId === readyNotifyOrderId);
+  if(!o) return;
+  let smsText;
+  if(readyNotifyMode === 'new') {
+    smsText = `Hi ${o.customerName}, your order ${o.orderId} has been placed at StitchPro. Total: LKR ${o.grandTotal.toLocaleString()}, Advance: LKR ${o.advancePaid.toLocaleString()}.`;
+    if(o.balanceAmount > 0) smsText += ` Balance due on collection: LKR ${o.balanceAmount.toLocaleString()}.`;
+    smsText += ` Thank you!`;
+  } else {
+    smsText = `Hi ${o.customerName}, your order ${o.orderId} is ready at StitchPro. Total: LKR ${o.grandTotal.toLocaleString()}, Advance: LKR ${o.advancePaid.toLocaleString()}.`;
+    if(o.balanceAmount > 0) smsText += ` Balance due: LKR ${o.balanceAmount.toLocaleString()}.`;
+    smsText += ` Please come collect. Thank you!`;
+  }
+  const phone = o.customerPhone;
+  window.open(`sms:${phone}?body=${encodeURIComponent(smsText)}`, '_blank');
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== readyNotifyOrderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, smsCount: log.smsCount+1, lastSms: Date.now() } };
+  });
+  await saveOrders();
+  closeReadyNotify();
+  toast('SMS app opened!', 'success');
+}
+
+// ── READY MSG & CALL ──
+function buildReadyMessage(o) {
+  let m = `🎉 *Your order is ready!*\n\n`;
+  m += `Hi ${o.customerName},\n`;
+  m += `Your stitching order *${o.orderId}* is ready for collection.\n\n`;
+  m += `📦 *Items:*\n`;
+  o.items.forEach((it,i) => {
+    m += `  ${i+1}. ${it.qty>1?it.qty+'× ':''}${it.type}\n`;
+  });
+  m += `\n💵 *Total:* LKR ${o.grandTotal.toLocaleString()}\n`;
+  m += `✅ *Advance Paid:* LKR ${o.advancePaid.toLocaleString()}\n`;
+  if(o.balanceAmount > 0) m += `🔴 *Balance Due:* LKR ${o.balanceAmount.toLocaleString()}\n`;
+  m += `\nPlease visit us to collect your order. Thank you! 🙏\n_StitchPro Tailor Shop_`;
+  return m;
+}
+
+async function sendReadyMsg(orderId) {
+  const o = allOrders.find(x => x.orderId === orderId);
+  if(!o) return;
+  const msg = buildReadyMessage(o);
+  const phone = o.customerPhone.replace(/\+/,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  // Log it
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== orderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, msgCount: log.msgCount+1, lastMsg: Date.now() } };
+  });
+  await saveOrders();
+  renderOrderList('Completed');
+  toast('Ready message sent!', 'success');
+}
+
+async function callCustomer(orderId) {
+  const o = allOrders.find(x => x.orderId === orderId);
+  if(!o) return;
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== orderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, callCount: log.callCount+1, lastCall: Date.now() } };
+  });
+  await saveOrders();
+  renderOrderList('Completed');
+  window.location.href = `tel:${o.customerPhone}`;
+}
+
+async function sendSms(orderId) {
+  const o = allOrders.find(x => x.orderId === orderId);
+  if(!o) return;
+  const itemList = o.items.map((it,i) => `${i+1}. ${it.qty>1?it.qty+'x ':''}${it.type}`).join(', ');
+  let smsText = `Hi ${o.customerName}, your order ${o.orderId} is ready (${itemList}).`;
+  if(o.balanceAmount > 0) smsText += ` Balance: LKR ${o.balanceAmount}.`;
+  smsText += ` Please collect. -StitchPro`;
+  allOrders = allOrders.map(x => {
+    if(x.orderId !== orderId) return x;
+    const log = x.contactLog || { msgCount:0, smsCount:0, callCount:0, lastMsg:null, lastSms:null, lastCall:null };
+    return { ...x, contactLog: { ...log, smsCount: log.smsCount+1, lastSms: Date.now() } };
+  });
+  await saveOrders();
+  renderOrderList('Completed');
+  window.location.href = `sms:${o.customerPhone}?body=${encodeURIComponent(smsText)}`;
+}
+
+function timeSince(ts) {
+  if(!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  const hrs = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return mins + 'm ago';
+  if(hrs < 24) return hrs + 'h ago';
+  return days + 'd ago';
+}
+
+function updateNotifySummary(orders) {
+  const el = document.getElementById('notifySummary');
+  if(!orders.length) { el.style.display='none'; return; }
+  el.style.display = 'block';
+  const notContacted = orders.filter(o => !o.contactLog || (o.contactLog.msgCount===0 && o.contactLog.smsCount===0 && o.contactLog.callCount===0)).length;
+  const msgSent = orders.filter(o => o.contactLog && (o.contactLog.msgCount > 0 || o.contactLog.smsCount > 0)).length;
+  const called = orders.filter(o => o.contactLog && o.contactLog.callCount > 0).length;
+  document.getElementById('nsNotContacted').textContent = notContacted;
+  document.getElementById('nsMsgSent').textContent = msgSent;
+  document.getElementById('nsCallMade').textContent = called;
+}
+
+// ── HISTORY ──
+function setHFilter(el, f) {
+  hFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderHistory();
+}
+function renderHistory() {
+  const q=(document.getElementById('historySearch')?.value||'').toLowerCase().trim();
+  let orders=allOrders.filter(o=>o.status==='HandedOver');
+  const now=Date.now();
+  if(hFilter==='today'){const t=new Date().toLocaleDateString('en-GB');orders=orders.filter(o=>o.createdDate===t);}
+  else if(hFilter==='week') orders=orders.filter(o=>o.handoverTs&&now-o.handoverTs<7*864e5);
+  else if(hFilter==='month') orders=orders.filter(o=>o.handoverTs&&now-o.handoverTs<30*864e5);
+  if(q) orders=orders.filter(o=>o.customerName.toLowerCase().includes(q)||o.customerPhone.includes(q)||o.orderId.toLowerCase().includes(q));
+  orders=orders.sort((a,b)=>b.handoverTs-a.handoverTs);
+  const el=document.getElementById('historyList');
+  if(!orders.length){el.innerHTML='<div class="empty-state"><div class="empty-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></div><div class="empty-title">No records found</div></div>';return;}
+  el.innerHTML=orders.map(o=>{
+    const iHtml=o.items.map((it,i)=>`<div class="oc-item-row"><div class="oci-name">${i+1}. ${it.qty>1?it.qty+'× ':''}${it.type}</div><div class="oci-price">LKR ${it.total.toLocaleString()}</div></div>`).join('');
+    const hd=o.handoverTs?new Date(o.handoverTs).toLocaleDateString('en-GB'):'—';
+    return `<div class="order-card handover">
+      <div class="oc-top"><div class="oc-name">${o.customerName}</div><div class="oc-id">${o.orderId}</div></div>
+      <div class="oc-meta"><span>📞 ${o.customerPhone}</span><span>Ordered: ${o.createdDate}</span><span>Handed: ${hd}</span></div>
+      <div class="oc-items">${iHtml}</div>
+      <div class="oc-fin">
+        <div class="fin-box"><div class="fin-val">LKR ${o.grandTotal.toLocaleString()}</div><div class="fin-lbl">Total</div></div>
+        <div class="fin-box"><div class="fin-val">LKR ${o.advancePaid.toLocaleString()}</div><div class="fin-lbl">Paid</div></div>
+        <div class="fin-box balance-box"><div class="fin-val">${o.balanceAmount>0?'LKR '+o.balanceAmount.toLocaleString():'Cleared'}</div><div class="fin-lbl">Balance</div></div>
+      </div>
+      <div class="oc-actions">
+        <button class="btn btn-wa btn-sm" onclick="openWA('${o.orderId}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> Send Receipt</button>
+        <button class="btn btn-red btn-sm" onclick="deleteOrder('${o.orderId}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteOrder(id) {
+  const o=allOrders.find(x=>x.orderId===id);
+  confirm2('Delete Order?',`Permanently delete ${id} for ${o?.customerName}? This cannot be undone.`,'btn-red','Delete', async()=>{
+    allOrders=allOrders.filter(x=>x.orderId!==id);
+    await saveOrders(); renderHistory(); toast('Order deleted','error');
+  });
+}
+
+// ── WHATSAPP ──
+function buildWAMessage(o) {
+  let m=`✂️ *StitchPro — Order ${o.orderId}* ✂️\n\n`;
+  m+=`👤 *Customer:* ${o.customerName}\n📞 *Phone:* ${o.customerPhone}\n📅 *Date:* ${o.createdDate}`;
+  if(o.deliveryDate) m+=`\n🚚 *Deliver by:* ${o.deliveryDate}`;
+  m+=`\n\n━━━━━━━━━━━━━━━━━━\n*GARMENTS (${o.items.length} item${o.items.length>1?'s':''}):*\n━━━━━━━━━━━━━━━━━━\n`;
+  o.items.forEach((it,i)=>{
+    m+=`\n${i+1}. *${it.qty>1?it.qty+'× ':''}${it.type}*\n`;
+    const mParts=Object.entries(it.meas||{}).filter(([k])=>k!=='_sleeve'&&k!=='name');
+    if(mParts.length) m+=`   📏 ${mParts.map(([k,v])=>`${k.toUpperCase()}: ${v}"`).join(' | ')}\n`;
+    m+=`   💰 Stitch: LKR ${it.stitch}${it.hasCloth?` + Cloth: LKR ${it.cloth}`:''}${it.qty>1?` ×${it.qty}`:''} = LKR ${it.total.toLocaleString()}\n`;
+    if(it.note) m+=`   📌 _${it.note}_\n`;
+  });
+  m+=`\n━━━━━━━━━━━━━━━━━━\n`;
+  m+=`💵 *Grand Total:* LKR ${o.grandTotal.toLocaleString()}\n`;
+  m+=`✅ *Advance Paid:* LKR ${o.advancePaid.toLocaleString()}\n`;
+  m+=`🔴 *Balance Due:* LKR ${o.balanceAmount.toLocaleString()}\n`;
+  m+=`━━━━━━━━━━━━━━━━━━\n_Thank you for choosing StitchPro_ 🙏`;
+  return m;
+}
+
+function showReceiptWA(order) {
+  // Reuse the readyNotify modal for new order confirmation
+  readyNotifyOrderId = order.orderId;
+  readyNotifyMode = 'new';
+  const balLine = order.balanceAmount > 0
+    ? `<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Balance Due</span><strong style="color:var(--red);">LKR ${order.balanceAmount.toLocaleString()}</strong></div>`
+    : `<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Balance</span><strong style="color:var(--green);">Fully Paid ✓</strong></div>`;
+  document.getElementById('readyNotifyTitle').textContent = 'Order Saved — Notify Customer';
+  document.getElementById('readyNotifyIcon').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--primary)" stroke-width="2.5" fill="none"/><polyline points="9 12 11 14 15 10" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  document.getElementById('readyNotifyCallBtn').style.display = 'none';
+  document.getElementById('readyNotifyInfo').innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span style="font-weight:800;color:var(--text);font-size:14px;">${order.customerName}</span>
+      <span style="background:var(--primary-light);color:var(--primary);border:1px solid rgba(75,94,255,0.2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;">New Order ✓</span>
+    </div>
+    <div style="color:var(--text3);font-size:12px;margin-bottom:10px;">📞 ${order.customerPhone}</div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Order No</span><strong style="color:var(--primary);">${order.orderId}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Total</span><strong>LKR ${order.grandTotal.toLocaleString()}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Advance Paid</span><strong style="color:var(--green);">LKR ${order.advancePaid.toLocaleString()}</strong></div>
+      ${balLine}
+    </div>`;
+  document.getElementById('readyNotifyModal').classList.add('show');
+}
+
+function openWA(orderId) {
+  waOrderId = orderId;
+  const o = allOrders.find(x=>x.orderId===orderId);
+  if(!o) return;
+  const msg = buildWAMessage(o);
+  const enc = encodeURIComponent(msg);
+  let html='';
+  // Customer section
+  html+=`<div class="wa-section-label">Send to Customer</div>`;
+  const cp=o.customerPhone.replace(/\+/,'');
+  html+=`<div class="wa-contact" onclick="sendWADirect('${cp}','${enc}')">
+    <div class="wa-av" style="background:#E7FFF0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+    <div class="wa-contact-info"><div class="wa-contact-name">${o.customerName}</div><div class="wa-contact-detail">${o.customerPhone} · Customer</div></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>`;
+  if(staff.length) {
+    html+=`<div class="wa-section-label">Send to Tailor / Staff</div>`;
+    staff.forEach(s=>{
+      const sp=s.phone.replace(/\+/,'');
+      html+=`<div class="wa-contact" onclick="sendWADirect('${sp}','${enc}')">
+        <div class="wa-av" style="background:var(--primary-light);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <div class="wa-contact-info"><div class="wa-contact-name">${s.name}</div><div class="wa-contact-detail">${s.phone} · ${s.role}</div></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`;
+    });
+  } else {
+    html+=`<div style="text-align:center;font-size:13px;color:var(--text3);padding:14px;">No staff added. Go to Staff & Tailors.</div>`;
+  }
+  document.getElementById('waContent').innerHTML = html;
+  document.getElementById('waModal').classList.add('show');
+}
+
+function sendWADirect(phone, encMsg) {
+  window.open(`https://wa.me/${phone}?text=${encMsg}`, '_blank');
+  closeWa();
+  navigateTo('dashboard');
+}
+function closeWa() { document.getElementById('waModal').classList.remove('show'); }
+
+// ── STAFF ──
+function renderStaff() {
+  const el=document.getElementById('staffList');
+  if(!staff.length){el.innerHTML='<div class="empty-state"><div class="empty-title">No staff added</div></div>';return;}
+  el.innerHTML=staff.map((s,i)=>`
+    <div class="staff-row">
+      <div class="staff-av"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div class="staff-info"><div class="staff-name">${s.name}</div><div class="staff-phone">${s.phone} <span class="staff-role">${s.role}</span></div></div>
+      <button class="btn btn-red btn-sm" onclick="removeStaff(${i})"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>`).join('');
+}
+
+async function addStaff() {
+  const name=document.getElementById('newStaffName').value.trim();
+  const phoneRaw=document.getElementById('newStaffPhone').value.trim();
+  if(!name||!phoneRaw){toast('Enter name & phone','error');return;}
+  const phone=getFullPhone(phoneRaw);
+  const role=document.getElementById('newStaffRole').value;
+  staff.push({id:'s'+Date.now(),name,phone,role});
+  await saveStaff(); renderStaff();
+  document.getElementById('newStaffName').value='';
+  document.getElementById('newStaffPhone').value='';
+  toast('Staff member added','success');
+}
+
+function removeStaff(i) {
+  confirm2('Remove Staff?',`Remove ${staff[i].name} from the team?`,'btn-red','Remove',async()=>{
+    staff.splice(i,1); await saveStaff(); renderStaff(); toast('Staff removed');
+  });
+}
+
+// ── CONFIRM ──
+function confirm2(title, msg, btnClass, btnLabel, cb) {
+  document.getElementById('cTitle').textContent=title;
+  document.getElementById('cMsg').textContent=msg;
+  const y=document.getElementById('cYes');
+  y.textContent=btnLabel; y.className='btn '+btnClass;
+  confirmCb=cb;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function doConfirm(){if(confirmCb)confirmCb();closeConfirm();}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('show');confirmCb=null;}
+
+// Fix doHandover confirm2 call (escaped quote issue)
+function doHandover(id) {
+  const o=allOrders.find(x=>x.orderId===id);
+  confirm2('Handover to Customer?','Mark '+id+' ('+(o?.customerName||'')+') as handed over? It will move to History.','btn-blue','Confirm Handover', async()=>{
+    allOrders=allOrders.map(x=>x.orderId===id?{...x,status:'HandedOver',handoverTs:Date.now()}:x);
+    await saveOrders(); renderOrderList('Completed'); toast('Order handed over!','success');
+  });
+}
+
+// ── TOAST ──
+let toastT;
+function toast(msg, type='') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='show'+(type?' '+type:'');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.className='',2800);
+}
+
+
+// ── ANALYTICS ──
+function renderAnalytics() {
+  buildRevenueChart();
+  buildRevSummary();
+  buildItemBreakdown();
+  buildTopCustomers();
+  buildCleanupStatus();
+}
+
+function getMonthKey(ts) {
+  const d = new Date(ts || Date.now());
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function getMonthLabel(key) {
+  const [y,m] = key.split('-');
+  return new Date(+y, +m-1, 1).toLocaleDateString('en-GB',{month:'short',year:'2-digit'});
+}
+
+function buildRevenueChart() {
+  // Last 6 months
+  const months = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  }
+  const rev = {};
+  months.forEach(m => rev[m]=0);
+  allOrders.filter(o=>o.status!=='Deleted').forEach(o=>{
+    const k = getMonthKey(o.createdTs);
+    if(rev[k]!==undefined) rev[k] += o.grandTotal||0;
+  });
+  // Also add archived monthly summaries
+  const archived = JSON.parse(localStorage.getItem('stitchpro_monthly_archive')||'{}');
+  Object.keys(archived).forEach(k=>{ if(rev[k]!==undefined) rev[k]+=archived[k].revenue||0; });
+
+  const maxVal = Math.max(...Object.values(rev), 1);
+  const colors = ['#C7D2FE','#A5B4FC','#818CF8','#6366F1','#4F46E5','#4338CA'];
+  const chartEl = document.getElementById('revenueChart');
+  const lblEl = document.getElementById('revenueLabels');
+  chartEl.innerHTML = months.map((m,i)=>{
+    const val = rev[m]||0;
+    const h = Math.max(Math.round((val/maxVal)*140),4);
+    const valLabel = val>0?(val>=1000?Math.round(val/1000)+'k':val):'';
+    return `<div class="chart-bar-wrap">
+      <div class="chart-bar" style="height:${h}px;background:${colors[i]};position:relative;">
+        ${valLabel?`<div class="chart-bar-val">${valLabel}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  lblEl.innerHTML = months.map(m=>`<div class="chart-lbl">${getMonthLabel(m)}</div>`).join('');
+}
+
+function buildRevSummary() {
+  const allValid = allOrders.filter(o=>o.status!=='Deleted');
+  const totalRev = allValid.reduce((a,o)=>a+(o.grandTotal||0),0);
+  const totalCollected = allValid.reduce((a,o)=>a+(o.advancePaid||0),0);
+  // Balance due: only from orders NOT yet handed over (Pending or Completed)
+  const pendingBalance = allOrders.filter(o=>o.status==='Pending'||o.status==='Completed')
+    .reduce((a,o)=>a+(o.balanceAmount||0),0);
+  // Also count balance from HandedOver orders where full payment wasn't received
+  const handedBalance = allOrders.filter(o=>o.status==='HandedOver')
+    .reduce((a,o)=>a+(o.balanceAmount||0),0);
+  const today = new Date().toLocaleDateString('en-GB');
+  const todayRev = allValid.filter(o=>o.createdDate===today).reduce((a,o)=>a+(o.advancePaid||0),0);
+  const thisMonth = getMonthKey(Date.now());
+  const monthRev = allValid.filter(o=>getMonthKey(o.createdTs)===thisMonth).reduce((a,o)=>a+(o.grandTotal||0),0);
+  document.getElementById('revSummary').innerHTML = `
+    <div class="ana-stat"><div class="ana-stat-val" style="color:var(--primary)">LKR ${(totalRev/1000).toFixed(1)}k</div><div class="ana-stat-lbl">All Time Revenue</div></div>
+    <div class="ana-stat"><div class="ana-stat-val" style="color:var(--green)">LKR ${(totalCollected/1000).toFixed(1)}k</div><div class="ana-stat-lbl">Total Collected</div></div>
+    <div class="ana-stat"><div class="ana-stat-val" style="color:var(--orange)">LKR ${pendingBalance.toLocaleString()}</div><div class="ana-stat-lbl">Balance Due (Active)</div></div>
+    <div class="ana-stat"><div class="ana-stat-val" style="color:var(--red)">${handedBalance>0?'LKR '+handedBalance.toLocaleString():'LKR 0'}</div><div class="ana-stat-lbl">Unpaid After Handover</div></div>
+    <div class="ana-stat"><div class="ana-stat-val" style="color:var(--blue)">LKR ${todayRev.toLocaleString()}</div><div class="ana-stat-lbl">Today Collected</div></div>
+    <div class="ana-stat" style="grid-column:1/-1"><div class="ana-stat-val" style="color:var(--purple)">LKR ${monthRev.toLocaleString()}</div><div class="ana-stat-lbl">This Month Revenue</div></div>`;
+}
+
+function buildItemBreakdown() {
+  const counts = {};
+  allOrders.filter(o=>o.status!=='Deleted').forEach(o=>{
+    (o.items||[]).forEach(it=>{
+      const t = it.type.split(' ')[0];
+      counts[t] = (counts[t]||0) + (it.qty||1);
+    });
+  });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1]||1;
+  const colors = ['#6366F1','#22C55E','#F59E0B','#EC4899','#06B6D4','#8B5CF6'];
+  const el = document.getElementById('itemBreakdown');
+  if(!sorted.length){el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:14px;">No data yet</div>';return;}
+  el.innerHTML = sorted.slice(0,6).map(([name,cnt],i)=>`
+    <div class="item-bar-row">
+      <div class="item-bar-name">${name}</div>
+      <div class="item-bar-track"><div class="item-bar-fill" style="width:${Math.round(cnt/max*100)}%;background:${colors[i%colors.length]};"></div></div>
+      <div class="item-bar-count">${cnt}</div>
+    </div>`).join('');
+}
+
+function buildTopCustomers() {
+  const custs = {};
+  allOrders.filter(o=>o.status!=='Deleted').forEach(o=>{
+    const k = o.customerPhone;
+    if(!custs[k]) custs[k]={name:o.customerName,phone:k,total:0,count:0};
+    custs[k].total += o.grandTotal||0;
+    custs[k].count++;
+  });
+  const sorted = Object.values(custs).sort((a,b)=>b.total-a.total);
+  const el = document.getElementById('topCustomers');
+  if(!sorted.length){el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:14px;">No data yet</div>';return;}
+  const rankClass = ['gold','silver','bronze'];
+  el.innerHTML = sorted.slice(0,5).map((c,i)=>`
+    <div class="top-cust-row">
+      <div class="top-cust-rank ${rankClass[i]||''}">${i+1}</div>
+      <div class="top-cust-info"><div class="top-cust-name">${c.name}</div><div class="top-cust-sub">${c.count} order${c.count>1?'s':''} · ${c.phone}</div></div>
+      <div class="top-cust-val">LKR ${c.total.toLocaleString()}</div>
+    </div>`).join('');
+}
+
+function buildCleanupStatus() {
+  const handedOver = allOrders.filter(o=>o.status==='HandedOver');
+  const old30 = handedOver.filter(o=>o.handoverTs && Date.now()-o.handoverTs > 30*864e5);
+  const archived = JSON.parse(localStorage.getItem('stitchpro_monthly_archive')||'{}');
+  const archiveMonths = Object.keys(archived).length;
+  document.getElementById('cleanupStatus').innerHTML = `
+    <div class="cleanup-row"><span style="color:var(--text2)">Handed Over Orders</span><strong>${handedOver.length}</strong></div>
+    <div class="cleanup-row"><span style="color:var(--orange)">Older than 30 days</span><strong style="color:var(--orange)">${old30.length}</strong></div>
+    <div class="cleanup-row"><span style="color:var(--text2)">Archived Months</span><strong>${archiveMonths}</strong></div>
+    <div class="cleanup-row"><span style="color:var(--text2)">Last Cleanup</span><strong style="font-size:12px;">${localStorage.getItem('stitchpro_last_cleanup')||'Never'}</strong></div>`;
+}
+
+// ── AUTO MONTHLY CLEANUP ──
+async function autoMonthlyCleanup() {
+  const lastCleanup = localStorage.getItem('stitchpro_last_cleanup_ts');
+  const now = Date.now();
+  // Run if never run or it's been more than 30 days
+  if(lastCleanup && now - parseInt(lastCleanup) < 30*864e5) return;
+  await doCleanup(false);
+}
+
+async function runManualCleanup() {
+  const old30 = allOrders.filter(o=>o.status==='HandedOver' && o.handoverTs && Date.now()-o.handoverTs > 30*864e5);
+  if(!old30.length){toast('No orders older than 30 days to clean');return;}
+  confirm2('Run Cleanup?','Delete '+old30.length+' handed-over orders older than 30 days? Monthly revenue summaries will be saved.','btn-red','Delete '+old30.length+' Orders', ()=>doCleanup(true));
+}
+
+async function doCleanup(manual) {
+  const cutoff = Date.now() - 30*864e5;
+  const toDelete = allOrders.filter(o=>o.status==='HandedOver' && o.handoverTs && o.handoverTs < cutoff);
+  if(!toDelete.length) { if(manual) toast('Nothing to clean up'); return; }
+  // Archive monthly summaries
+  const archive = JSON.parse(localStorage.getItem('stitchpro_monthly_archive')||'{}');
+  toDelete.forEach(o=>{
+    const k = getMonthKey(o.handoverTs);
+    if(!archive[k]) archive[k]={count:0,revenue:0,month:getMonthLabel(k)};
+    archive[k].count++;
+    archive[k].revenue += o.grandTotal||0;
+  });
+  localStorage.setItem('stitchpro_monthly_archive', JSON.stringify(archive));
+  // Delete orders
+  const deleteIds = new Set(toDelete.map(o=>o.orderId));
+  allOrders = allOrders.filter(o=>!deleteIds.has(o.orderId));
+  await saveOrders();
+  const dateStr = new Date().toLocaleDateString('en-GB');
+  localStorage.setItem('stitchpro_last_cleanup', dateStr);
+  localStorage.setItem('stitchpro_last_cleanup_ts', String(Date.now()));
+  if(manual) { toast(toDelete.length+' orders cleaned up!','success'); renderAnalytics(); }
+}
+
+// ── CUSTOM MESSAGE ──
+const MSG_TEMPLATES = [
+  {
+    title:'Order Ready — Come Collect',
+    msg:'Dear {name}, your stitching order is ready for collection. Please visit our shop at your earliest convenience. Thank you! 🙏 — StitchPro'
+  },
+  {
+    title:'Order Ready with Balance',
+    msg:'Hi {name}, your clothes are stitched and ready! Please come and collect. Kindly bring LKR {balance} balance amount. Thank you! ✂️'
+  },
+  {
+    title:'Delivery Reminder',
+    msg:'Dear {name}, this is a gentle reminder that your order {orderId} is ready and waiting for collection. We look forward to seeing you soon! 😊'
+  },
+  {
+    title:'Custom Follow-up',
+    msg:'Hi {name}, just checking in about your order with us. Please let us know if you have any questions or would like to arrange collection. 🙏'
+  }
+];
+
+function initCustomMsg() {
+  // Populate templates
+  const tplEl = document.getElementById('msgTemplates');
+  tplEl.innerHTML = MSG_TEMPLATES.map((t,i)=>`
+    <div class="msg-template" onclick="applyTemplate(${i})">
+      <div class="msg-template-title">${t.title}</div>
+      <div class="msg-template-preview">${t.msg.substring(0,60)}…</div>
+    </div>`).join('');
+  // Populate recipient dropdown with active customers
+  const sel = document.getElementById('msgRecipient');
+  const existing = Array.from(sel.options).map(o=>o.value);
+  // Get unique customers from completed orders
+  const custs = {};
+  allOrders.filter(o=>['Pending','Completed','HandedOver'].includes(o.status)).forEach(o=>{
+    custs[o.customerPhone]={name:o.customerName,phone:o.customerPhone,orderId:o.orderId,balance:o.balanceAmount||0};
+  });
+  // Clear existing customer options
+  while(sel.options.length > 2) sel.remove(2);
+  Object.values(custs).forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c.phone;
+    opt.dataset.name = c.name;
+    opt.dataset.orderid = c.orderId;
+    opt.dataset.balance = c.balance;
+    opt.textContent = c.name+' · '+c.phone;
+    sel.appendChild(opt);
+  });
+  // Char counter
+  document.getElementById('customMsgText').oninput = function() {
+    document.getElementById('msgCharCount').textContent = this.value.length;
+  };
+}
+
+function applyTemplate(idx) {
+  const t = MSG_TEMPLATES[idx];
+  const sel = document.getElementById('msgRecipient');
+  const opt = sel.selectedOptions[0];
+  let msg = t.msg;
+  if(opt && opt.value && opt.value !== 'manual') {
+    msg = msg.replace('{name}', opt.dataset.name||'Customer');
+    msg = msg.replace('{balance}', opt.dataset.balance||'0');
+    msg = msg.replace('{orderId}', opt.dataset.orderid||'');
+  }
+  document.getElementById('customMsgText').value = msg;
+  document.getElementById('msgCharCount').textContent = msg.length;
+}
+
+function onRecipientChange() {
+  const val = document.getElementById('msgRecipient').value;
+  document.getElementById('manualPhoneDiv').style.display = val==='manual'?'block':'none';
+}
+
+function sendCustomMsg() {
+  const sel = document.getElementById('msgRecipient');
+  const val = sel.value;
+  const msg = document.getElementById('customMsgText').value.trim();
+  if(!msg){toast('Type a message first','error');return;}
+  let phone = '';
+  if(val==='manual'){
+    const raw = document.getElementById('manualPhone').value.trim();
+    if(!raw){toast('Enter phone number','error');return;}
+    phone = getFullPhone(raw).replace('+','');
+  } else if(val){
+    phone = val.replace('+','');
+  } else {
+    toast('Select a recipient','error'); return;
+  }
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank');
+  toast('Opening WhatsApp…','success');
+}
+
+// ── BACKUP & RESTORE ──
+let restoreData = null;
+
+function initBackupPage() {
+  const orders = allOrders.filter(o=>o.status!=='Deleted');
+  const pending = orders.filter(o=>o.status==='Pending').length;
+  const completed = orders.filter(o=>o.status==='Completed').length;
+  const handedOver = orders.filter(o=>o.status==='HandedOver').length;
+  const archived = JSON.parse(localStorage.getItem('stitchpro_monthly_archive')||'{}');
+  document.getElementById('backupInfo').innerHTML = `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
+      <div class="cleanup-row"><span style="color:var(--text2)">Total Orders</span><strong>${orders.length}</strong></div>
+      <div class="cleanup-row"><span style="color:var(--orange)">Pending</span><strong style="color:var(--orange)">${pending}</strong></div>
+      <div class="cleanup-row"><span style="color:var(--green)">Completed</span><strong style="color:var(--green)">${completed}</strong></div>
+      <div class="cleanup-row"><span style="color:var(--blue)">Handed Over</span><strong style="color:var(--blue)">${handedOver}</strong></div>
+      <div class="cleanup-row"><span style="color:var(--text2)">Staff Members</span><strong>${staff.length}</strong></div>
+      <div class="cleanup-row" style="border:none"><span style="color:var(--text2)">Archived Months</span><strong>${Object.keys(archived).length}</strong></div>
+    </div>`;
+  // Reset restore UI
+  document.getElementById('restoreFile').value = '';
+  document.getElementById('restorePreview').style.display = 'none';
+  document.getElementById('restoreBtn').style.display = 'none';
+  restoreData = null;
+}
+
+async function doBackup() {
+  const archived = JSON.parse(localStorage.getItem('stitchpro_monthly_archive')||'{}');
+  const lastCleanup = localStorage.getItem('stitchpro_last_cleanup')||'';
+  const lastCleanupTs = localStorage.getItem('stitchpro_last_cleanup_ts')||'';
+  const backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exportedDate: new Date().toLocaleDateString('en-GB'),
+    orders: allOrders,
+    staff: staff,
+    monthlyArchive: archived,
+    lastCleanup,
+    lastCleanupTs
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `stitchpro-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded!', 'success');
+}
+
+function previewRestore(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.version || !Array.isArray(data.orders)) {
+        toast('Invalid backup file', 'error');
+        document.getElementById('restorePreview').style.display = 'none';
+        document.getElementById('restoreBtn').style.display = 'none';
+        restoreData = null;
+        return;
+      }
+      restoreData = data;
+      const pending = data.orders.filter(o=>o.status==='Pending').length;
+      const completed = data.orders.filter(o=>o.status==='Completed').length;
+      const handedOver = data.orders.filter(o=>o.status==='HandedOver').length;
+      const archCount = Object.keys(data.monthlyArchive||{}).length;
+      document.getElementById('restorePreview').innerHTML = `
+        <strong style="color:var(--green)">✓ Valid backup file</strong><br>
+        📅 Exported: ${data.exportedDate||'Unknown'}<br>
+        📦 Orders: ${data.orders.length} (${pending} pending, ${completed} ready, ${handedOver} handed over)<br>
+        👥 Staff: ${(data.staff||[]).length} members<br>
+        🗂️ Archived months: ${archCount}`;
+      document.getElementById('restorePreview').style.display = 'block';
+      document.getElementById('restoreBtn').style.display = 'flex';
+    } catch(err) {
+      toast('Could not read file', 'error');
+      restoreData = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function doRestore() {
+  if(!restoreData) { toast('No valid backup loaded', 'error'); return; }
+  confirm2('Restore Backup?',
+    `This will replace ALL current data with the backup from ${restoreData.exportedDate||'unknown date'}. This cannot be undone.`,
+    'btn-red', 'Yes, Restore',
+    async () => {
+      allOrders = restoreData.orders || [];
+      staff = restoreData.staff || [];
+      await localforage.setItem('orders', allOrders);
+      await localforage.setItem('staff', staff);
+      if(restoreData.monthlyArchive)
+        localStorage.setItem('stitchpro_monthly_archive', JSON.stringify(restoreData.monthlyArchive));
+      if(restoreData.lastCleanup)
+        localStorage.setItem('stitchpro_last_cleanup', restoreData.lastCleanup);
+      if(restoreData.lastCleanupTs)
+        localStorage.setItem('stitchpro_last_cleanup_ts', restoreData.lastCleanupTs);
+      updateKPIs();
+      toast('Data restored successfully!', 'success');
+      setTimeout(() => navigateTo('dashboard'), 1200);
+    }
+  );
+}
+
+async function clearAllData() {
+  confirm2('Clear All Data?',
+    'This will permanently delete ALL orders, staff, and archives. Make a backup first!',
+    'btn-red', 'Delete Everything',
+    async () => {
+      allOrders = [];
+      staff = [];
+      await localforage.setItem('orders', []);
+      await localforage.setItem('staff', []);
+      localStorage.removeItem('stitchpro_monthly_archive');
+      localStorage.removeItem('stitchpro_last_cleanup');
+      localStorage.removeItem('stitchpro_last_cleanup_ts');
+      updateKPIs();
+      toast('All data cleared', 'success');
+      setTimeout(() => navigateTo('dashboard'), 1200);
+    }
+  );
+}
+
+// ══════════════════════════════════════════
+// SUBSCRIPTION SYSTEM
+// ══════════════════════════════════════════
+const SUB = {
+  SECRET: 'SP#9x2K!mT7v',       // Secret key — never share this
+  DEV_CONTACT: '+94XXXXXXXXX',   // ← YOUR WhatsApp number here
+  PERIOD_DAYS: 30,
+  GRACE_DAYS: 3,
+  SHOP_NAME: 'StitchPro Shop',
+};
+
+// Generate a unique Shop ID on first run
+function getShopId() {
+  let id = localStorage.getItem('sp_shop_id');
+  if (!id) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    id = 'SP-';
+    for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    localStorage.setItem('sp_shop_id', id);
+  }
+  return id;
+}
+
+// Get current month key e.g. "2026-06"
+function subMonthKey(ts) {
+  const d = new Date(ts || Date.now());
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+// Simple hash: djb2 on string → 6-digit PIN
+function calcPin(shopId, monthKey) {
+  const str = SUB.SECRET + shopId + monthKey;
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+    hash = hash >>> 0;
+  }
+  return String(hash % 900000 + 100000); // always 6 digits
+}
+
+function subCheckOnLoad() {
+  const shopId = getShopId();
+  const activatedTs = parseInt(localStorage.getItem('sp_activated_ts') || '0');
+  const now = Date.now();
+
+  // Never activated → lock immediately (first use needs PIN)
+  if (!activatedTs) {
+    showLockScreen(shopId, 0);
+    return;
+  }
+
+  const daysSince = (now - activatedTs) / 86400000;
+  const expiredTs = activatedTs + SUB.PERIOD_DAYS * 86400000;
+
+  if (daysSince > SUB.PERIOD_DAYS) {
+    // Fully expired
+    showLockScreen(shopId, expiredTs);
+  } else if (daysSince > SUB.PERIOD_DAYS - SUB.GRACE_DAYS) {
+    // Grace period — show warning banner
+    const daysLeft = Math.ceil(SUB.PERIOD_DAYS - daysSince);
+    const banner = document.getElementById('subGraceBanner');
+    document.getElementById('subGraceText').textContent =
+      `⚠️ Subscription expires in ${daysLeft} day${daysLeft===1?'':'s'} — contact developer to renew`;
+    banner.classList.remove('hidden');
+    // Add top padding to body so banner doesn't cover content
+    document.body.style.paddingTop = '42px';
+  }
+}
+
+function showLockScreen(shopId, expiredTs) {
+  document.getElementById('subShopIdDisplay').textContent = shopId;
+  document.getElementById('subShopNameDisplay').textContent = SUB.SHOP_NAME;
+  document.getElementById('subExpiredDate').textContent = expiredTs
+    ? new Date(expiredTs).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'})
+    : 'First Activation';
+  document.getElementById('subDevContact').textContent = SUB.DEV_CONTACT + ' (WhatsApp)';
+  document.getElementById('subLock').classList.remove('hidden');
+  // Hide main app chrome
+  document.querySelector('.app-header').style.display = 'none';
+  document.querySelector('.bottom-nav').style.display = 'none';
+}
+
+function tryUnlock() {
+  const shopId = getShopId();
+  const monthKey = subMonthKey();
+  const entered = document.getElementById('subPinInput').value.trim();
+  const correct = calcPin(shopId, monthKey);
+  const errEl = document.getElementById('subPinErr');
+
+  if (entered === correct) {
+    // Correct PIN — activate for 30 days from now
+    localStorage.setItem('sp_activated_ts', String(Date.now()));
+    document.getElementById('subLock').classList.add('hidden');
+    document.querySelector('.app-header').style.display = '';
+    document.querySelector('.bottom-nav').style.display = '';
+    document.getElementById('subGraceBanner').classList.add('hidden');
+    document.body.style.paddingTop = '';
+    errEl.textContent = '';
+    toast('✓ Subscription activated!', 'success');
+  } else {
+    document.getElementById('subPinInput').classList.add('error');
+    setTimeout(() => document.getElementById('subPinInput').classList.remove('error'), 500);
+    errEl.textContent = 'Incorrect PIN — contact developer for the correct PIN';
+    document.getElementById('subPinInput').value = '';
+  }
+}
+
+
+// Modal overlay close on outside click
+document.getElementById('waModal').addEventListener('click',e=>{if(e.target===document.getElementById('waModal'))closeWa();});
+document.getElementById('confirmModal').addEventListener('click',e=>{if(e.target===document.getElementById('confirmModal'))closeConfirm();});
+</script>
+</body>
+</html>
