@@ -19,204 +19,168 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android build tools
+      - name: Install Android SDK
         run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          curl -sL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o tools.zip
+          unzip -q tools.zip
+          mv cmdline-tools latest
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Build APK from index.html
+      - name: Create Android Project
         run: |
-          # â”€â”€ Create full Android project from scratch â”€â”€
+          set -e
           mkdir -p app/src/main/java/com/tailorme/app
           mkdir -p app/src/main/assets/www
           mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
           mkdir -p app/src/main/res/mipmap-xhdpi
           mkdir -p app/src/main/res/mipmap-xxhdpi
           mkdir -p gradle/wrapper
-
-          # Copy index.html to assets
           cp index.html app/src/main/assets/www/index.html
 
-          # â”€â”€ AndroidManifest.xml â”€â”€
-          cat > app/src/main/AndroidManifest.xml << 'MANIFEST'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.tailorme.app">
-              <uses-permission android:name="android.permission.INTERNET"/>
-              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-              <application
-                  android:allowBackup="true"
-                  android:icon="@mipmap/ic_launcher"
-                  android:label="Tailor Me"
-                  android:theme="@style/AppTheme"
-                  android:usesCleartextTraffic="true"
-                  android:hardwareAccelerated="true">
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true"
-                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale"
-                      android:windowSoftInputMode="adjustResize"
-                      android:screenOrientation="portrait">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          MANIFEST
+          cat > app/src/main/AndroidManifest.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.tailorme.app">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher"
+        android:label="Tailor Me" android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true" android:hardwareAccelerated="true">
+        <activity android:name=".MainActivity" android:exported="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale"
+            android:windowSoftInputMode="adjustResize" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+EOF
 
-          # â”€â”€ MainActivity.java â”€â”€
-          cat > app/src/main/java/com/tailorme/app/MainActivity.java << 'JAVA'
-          package com.tailorme.app;
-          import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          import android.webkit.WebChromeClient;
-          import android.view.WindowManager;
-          import android.graphics.Color;
-          import android.webkit.WebStorage;
-          public class MainActivity extends Activity {
-              private WebView webView;
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                  getWindow().setStatusBarColor(Color.parseColor("#0E1117"));
-                  getWindow().setNavigationBarColor(Color.parseColor("#131720"));
-                  webView = new WebView(this);
-                  setContentView(webView);
-                  WebSettings s = webView.getSettings();
-                  s.setJavaScriptEnabled(true);
-                  s.setDomStorageEnabled(true);
-                  s.setDatabaseEnabled(true);
-                  s.setAllowFileAccessFromFileURLs(true);
-                  s.setAllowUniversalAccessFromFileURLs(true);
-                  s.setCacheMode(WebSettings.LOAD_DEFAULT);
-                  s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-                  s.setUserAgentString(s.getUserAgentString() + " TailorMeApp/1.0");
-                  webView.setBackgroundColor(Color.parseColor("#0E1117"));
-                  webView.setWebViewClient(new WebViewClient());
-                  webView.setWebChromeClient(new WebChromeClient());
-                  webView.loadUrl("file:///android_asset/www/index.html");
-              }
-              @Override
-              public void onBackPressed() {
-                  if (webView.canGoBack()) webView.goBack();
-                  else super.onBackPressed();
-              }
-          }
-          JAVA
+          cat > app/src/main/java/com/tailorme/app/MainActivity.java << 'EOF'
+package com.tailorme.app;
+import android.app.Activity;
+import android.os.Bundle;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.view.WindowManager;
+import android.graphics.Color;
+public class MainActivity extends Activity {
+    private WebView webView;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(Color.parseColor("#0E1117"));
+        getWindow().setNavigationBarColor(Color.parseColor("#131720"));
+        webView = new WebView(this);
+        setContentView(webView);
+        WebSettings s = webView.getSettings();
+        s.setJavaScriptEnabled(true);
+        s.setDomStorageEnabled(true);
+        s.setDatabaseEnabled(true);
+        s.setAllowFileAccessFromFileURLs(true);
+        s.setAllowUniversalAccessFromFileURLs(true);
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        webView.setBackgroundColor(Color.parseColor("#0E1117"));
+        webView.setWebViewClient(new WebViewClient());
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.loadUrl("file:///android_asset/www/index.html");
+    }
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
+    }
+}
+EOF
 
-          # â”€â”€ styles.xml â”€â”€
-          cat > app/src/main/res/values/styles.xml << 'STYLES'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-                  <item name="android:windowBackground">#0E1117</item>
-                  <item name="android:statusBarColor">#0E1117</item>
-                  <item name="android:navigationBarColor">#131720</item>
-              </style>
-          </resources>
-          STYLES
+          cat > app/src/main/res/values/styles.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">#0E1117</item>
+        <item name="android:statusBarColor">#0E1117</item>
+        <item name="android:navigationBarColor">#131720</item>
+    </style>
+</resources>
+EOF
 
-          # â”€â”€ Simple launcher icon (blue square) â”€â”€
-          python3 -c "
-          import struct, zlib, base64
-          # Minimal valid 48x48 blue PNG icon
-          def create_png(size, color):
-              def chunk(name, data):
-                  c = zlib.crc32(name + data) & 0xffffffff
-                  return struct.pack('>I', len(data)) + name + data + struct.pack('>I', c)
-              ihdr = struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0)
-              r, g, b = color
-              raw = b''
-              for y in range(size):
-                  row = b'\x00'
-                  for x in range(size):
-                      row += bytes([r, g, b])
-                  raw += row
-              idat = zlib.compress(raw)
-              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b'')
-          icon = create_png(48, (77, 158, 255))
-          with open('app/src/main/res/mipmap-hdpi/ic_launcher.png', 'wb') as f: f.write(icon)
-          with open('app/src/main/res/mipmap-mdpi/ic_launcher.png', 'wb') as f: f.write(icon)
-          with open('app/src/main/res/mipmap-xhdpi/ic_launcher.png', 'wb') as f: f.write(icon)
-          with open('app/src/main/res/mipmap-xxhdpi/ic_launcher.png', 'wb') as f: f.write(icon)
-          "
+          python3 << 'EOF'
+import struct, zlib
+def make_png(size, r, g, b):
+    def chunk(tag, data):
+        c = zlib.crc32(tag + data) & 0xffffffff
+        return struct.pack('>I', len(data)) + tag + data + struct.pack('>I', c)
+    ihdr = struct.pack('>IIBBBBB', size, size, 8, 2, 0, 0, 0)
+    raw = b''.join(b'\x00' + bytes([r, g, b] * size) for _ in range(size))
+    return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b'')
+for path, sz in [('app/src/main/res/mipmap-mdpi/ic_launcher.png',48),('app/src/main/res/mipmap-hdpi/ic_launcher.png',72),('app/src/main/res/mipmap-xhdpi/ic_launcher.png',96),('app/src/main/res/mipmap-xxhdpi/ic_launcher.png',144)]:
+    open(path,'wb').write(make_png(sz,77,158,255))
+EOF
 
-          # â”€â”€ build.gradle (app) â”€â”€
-          cat > app/build.gradle << 'GRADLE'
-          apply plugin: 'com.android.application'
-          android {
-              namespace 'com.tailorme.app'
-              compileSdkVersion 34
-              defaultConfig {
-                  applicationId 'com.tailorme.app'
-                  minSdkVersion 21
-                  targetSdkVersion 34
-                  versionCode 1
-                  versionName '1.0'
-              }
-              buildTypes {
-                  debug { debuggable true }
-                  release { minifyEnabled false }
-              }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-          }
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'androidx.webkit:webkit:1.8.0'
-          }
-          GRADLE
+          cat > app/build.gradle << 'EOF'
+apply plugin: 'com.android.application'
+android {
+    namespace 'com.tailorme.app'
+    compileSdkVersion 34
+    defaultConfig {
+        applicationId 'com.tailorme.app'
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName '1.0'
+    }
+    buildTypes { debug { debuggable true } }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.8.0'
+}
+EOF
 
-          # â”€â”€ root build.gradle â”€â”€
-          cat > build.gradle << 'ROOTGRADLE'
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.1.4' }
-          }
-          allprojects { repositories { google(); mavenCentral() } }
-          ROOTGRADLE
+          cat > build.gradle << 'EOF'
+buildscript {
+    repositories { google(); mavenCentral() }
+    dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+}
+allprojects { repositories { google(); mavenCentral() } }
+EOF
 
-          # â”€â”€ settings.gradle â”€â”€
-          echo "rootProject.name = 'TailorMe'
-          include ':app'" > settings.gradle
+          printf "rootProject.name = 'TailorMe'\ninclude ':app'" > settings.gradle
 
-          # â”€â”€ gradle wrapper â”€â”€
-          cat > gradle/wrapper/gradle-wrapper.properties << 'PROPS'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.3-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          PROPS
-
-          # Download gradle wrapper jar
-          mkdir -p gradle/wrapper
-          curl -sL "https://github.com/gradle/gradle/raw/v8.3.0/gradle/wrapper/gradle-wrapper.jar"             -o gradle/wrapper/gradle-wrapper.jar || true
-
-          # â”€â”€ gradlew script â”€â”€
-          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.3.0/gradlew" -o gradlew ||           cat > gradlew << 'GW'
-          #!/bin/sh
-          exec java -jar gradle/wrapper/gradle-wrapper.jar "$@"
-          GW
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+EOF
+          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew" -o gradlew
           chmod +x gradlew
-
-          # â”€â”€ local.properties â”€â”€
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          curl -sL "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+          echo "sdk.dir=$HOME/android-sdk" > local.properties
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/34.0.0
+          echo "sdk.dir=$HOME/android-sdk" > local.properties
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -225,12 +189,5 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Done!
-        run: |
-          echo "=============================="
-          echo "  Tailor Me APK is Ready!"
-          echo "  Go to Actions tab, click"
-          echo "  this run, scroll down to"
-          echo "  Artifacts and download!"
-          echo "=============================="
-          ls -lh app/build/outputs/apk/debug/
+      - name: Done
+        run: ls -lh app/build/outputs/apk/debug/
